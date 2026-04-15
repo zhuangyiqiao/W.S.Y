@@ -407,6 +407,13 @@
       opacity: 0.7;
     }
 
+    .file-meta {
+      font-size: 12px;
+      color: var(--c-muted);
+      margin-top: 4px;
+      word-break: break-all;
+    }
+
     .title-badge {
       display: inline-flex;
       align-items: center;
@@ -783,8 +790,15 @@
           </div>
 
           <div class="form-group">
-            <label class="form-label">// 证据链接 (可选)</label>
-            <input class="form-input" type="text" id="evidence-input" placeholder="https://...">
+            <label class="form-label">// 上传附件 (可选)</label>
+            <input
+              class="form-input"
+              type="file"
+              id="evidence-file-input"
+              accept="image/*,.pdf,.txt,.doc,.docx,.zip,.rar,.7z,.heic,.heif"
+              onchange="handleEvidenceFileChange()"
+            >
+            <div id="evidence-file-meta" class="file-meta">未选择附件</div>
           </div>
 
           <div class="form-group">
@@ -805,7 +819,7 @@
         <div class="rule-head">// 当前执行逻辑</div>
         <div class="rule-item"><span class="rule-dot">→</span><span>朋友只需要在网页填写表单，不需要 GitHub 账号</span></div>
         <div class="rule-item"><span class="rule-dot">→</span><span>表单会提交到后端接口，再由后端写入 GitHub 数据</span></div>
-        <div class="rule-item"><span class="rule-dot">→</span><span>后续页面会读取 <code>data/checkins.json</code> 自动刷新状态</span></div>
+        <div class="rule-item"><span class="rule-dot">→</span><span>附件小于 2MB 时会以 base64 一起提交到后端</span></div>
       </div>
     </div>
 
@@ -968,7 +982,8 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
   <script>
-    const API_BASE_URL = 'https://YOUR-WORKER-URL.workers.dev';
+    const API_BASE_URL = 'https://wsyy.cynthiazyq24.workers.dev';
+    const MAX_EVIDENCE_FILE_SIZE = 2 * 1024 * 1024;
 
     function showPage(id, btn) {
       document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -1037,7 +1052,38 @@
       return '';
     }
 
+    function formatFileSize(bytes) {
+      if (bytes < 1024) return `${bytes} B`;
+      if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+      return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+    }
+
+    function handleEvidenceFileChange() {
+      const input = document.getElementById('evidence-file-input');
+      const meta = document.getElementById('evidence-file-meta');
+      const file = input?.files?.[0];
+
+      if (!file) {
+        meta.textContent = '未选择附件';
+        return;
+      }
+
+      meta.textContent = `已选择：${file.name}（${formatFileSize(file.size)}）`;
+    }
+
+    function readFileAsDataURL(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = () => reject(new Error('附件读取失败'));
+        reader.readAsDataURL(file);
+      });
+    }
+
     async function submitCheckin() {
+      const fileInput = document.getElementById('evidence-file-input');
+      const selectedFile = fileInput?.files?.[0] || null;
+
       const payload = {
         user: document.getElementById('user-select')?.value || '',
         date: document.getElementById('date-input')?.value || '',
@@ -1048,7 +1094,7 @@
         steps: document.getElementById('steps-input')?.value
           ? Number(document.getElementById('steps-input').value)
           : null,
-        evidence: document.getElementById('evidence-input')?.value?.trim() || '',
+        evidence: '',
         weight: document.getElementById('weight-input')?.value
           ? Number(document.getElementById('weight-input').value)
           : null,
@@ -1063,6 +1109,22 @@
 
       try {
         setSubmitLoading(true);
+
+        if (selectedFile) {
+          if (selectedFile.size > MAX_EVIDENCE_FILE_SIZE) {
+            throw new Error('附件不能超过 2MB');
+          }
+
+          const dataUrl = await readFileAsDataURL(selectedFile);
+
+          payload.evidence = {
+            mode: 'embedded_file',
+            filename: selectedFile.name,
+            mimeType: selectedFile.type || 'application/octet-stream',
+            size: selectedFile.size,
+            dataUrl
+          };
+        }
 
         const res = await fetch(`${API_BASE_URL}/checkin`, {
           method: 'POST',
@@ -1082,9 +1144,16 @@
 
         document.getElementById('duration-input').value = '';
         document.getElementById('steps-input').value = '';
-        document.getElementById('evidence-input').value = '';
         document.getElementById('weight-input').value = '';
         document.getElementById('note-input').value = '';
+
+        if (fileInput) {
+          fileInput.value = '';
+        }
+        const meta = document.getElementById('evidence-file-meta');
+        if (meta) {
+          meta.textContent = '未选择附件';
+        }
 
         const firstTypeBtn = document.querySelector('.type-btn[data-type="健身房"]');
         if (firstTypeBtn) {
