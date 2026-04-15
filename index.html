@@ -1,793 +1,1134 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IRONPACT</title>
 
-<style>
-  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap');
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap');
 
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
 
-  :root {
-    --c-bg: #0f0f0f;
-    --c-surface: #1a1a1a;
-    --c-surface2: #242424;
-    --c-border: #2a2a2a;
-    --c-text: #e8e8e4;
-    --c-muted: #6b6b65;
-    --c-accent: #c8f060;
-    --c-accent2: #60d0f0;
-    --c-warn: #f0a050;
-    --c-danger: #f05060;
-    --c-purple: #b060f0;
-    --c-mono: 'Space Mono', monospace;
-    --c-sans: 'Noto Sans SC', sans-serif;
-  }
+    :root {
+      --c-bg: #0f0f0f;
+      --c-surface: #1a1a1a;
+      --c-surface2: #242424;
+      --c-border: #2a2a2a;
+      --c-text: #e8e8e4;
+      --c-muted: #8a8a84;
+      --c-accent: #ffffff;
+      --c-accent2: #bdbdbd;
+      --c-warn: #d9d9d9;
+      --c-danger: #8f8f8f;
+      --c-purple: #cfcfcf;
+      --c-mono: 'Space Mono', monospace;
+      --c-sans: 'Noto Sans SC', sans-serif;
+    }
 
-  body {
-    background: var(--c-bg);
-    color: var(--c-text);
-    font-family: var(--c-sans);
-    font-size: 14px;
-    line-height: 1.5;
-    min-height: 100vh;
-  }
+    body.light-theme {
+      --c-bg: #f5f5f5;
+      --c-surface: #ffffff;
+      --c-surface2: #eeeeee;
+      --c-border: #d6d6d6;
+      --c-text: #111111;
+      --c-muted: #666666;
+      --c-accent: #111111;
+      --c-accent2: #444444;
+      --c-warn: #555555;
+      --c-danger: #777777;
+      --c-purple: #333333;
+    }
 
-  .app { display: flex; flex-direction: column; min-height: 100vh; }
+    body {
+      background: var(--c-bg);
+      color: var(--c-text);
+      font-family: var(--c-sans);
+      font-size: 14px;
+      line-height: 1.5;
+      min-height: 100vh;
+      transition: background 0.2s, color 0.2s;
+    }
 
-  /* NAV */
-  .nav {
-    display: flex;
-    align-items: center;
-    gap: 0;
-    border-bottom: 1px solid var(--c-border);
-    padding: 0 20px;
-    background: var(--c-bg);
-    position: sticky; top: 0; z-index: 100;
-    overflow-x: auto;
-  }
-  .nav-logo {
-    font-family: var(--c-mono);
-    font-size: 13px;
-    color: var(--c-accent);
-    letter-spacing: 0.08em;
-    padding: 14px 0;
-    margin-right: 24px;
-    white-space: nowrap;
-  }
-  .nav-logo span { color: var(--c-muted); }
-  .nav-tab {
-    font-family: var(--c-mono);
-    font-size: 11px;
-    letter-spacing: 0.06em;
-    color: var(--c-muted);
-    padding: 14px 14px;
-    cursor: pointer;
-    border-bottom: 2px solid transparent;
-    margin-bottom: -1px;
-    white-space: nowrap;
-    transition: color 0.15s, border-color 0.15s;
-    background: none; border-top: none; border-left: none; border-right: none;
-  }
-  .nav-tab:hover { color: var(--c-text); }
-  .nav-tab.active { color: var(--c-accent); border-bottom-color: var(--c-accent); }
+    .app {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
 
-  /* PAGES */
-  .page { display: none; padding: 24px 20px; max-width: 900px; margin: 0 auto; width: 100%; }
-  .page.active { display: block; }
+    .nav {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      border-bottom: 1px solid var(--c-border);
+      padding: 0 20px;
+      background: var(--c-bg);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      overflow-x: auto;
+      transition: background 0.2s, border-color 0.2s;
+    }
 
-  /* SECTION LABEL */
-  .section-label {
-    font-family: var(--c-mono);
-    font-size: 10px;
-    letter-spacing: 0.12em;
-    color: var(--c-muted);
-    text-transform: uppercase;
-    margin-bottom: 12px;
-  }
+    .nav-logo {
+      font-family: var(--c-mono);
+      font-size: 13px;
+      color: var(--c-accent);
+      letter-spacing: 0.08em;
+      padding: 14px 0;
+      margin-right: 24px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
 
-  /* STAT ROW */
-  .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 20px; }
-  .stat-card {
-    background: var(--c-surface);
-    border: 1px solid var(--c-border);
-    border-radius: 8px;
-    padding: 14px 16px;
-  }
-  .stat-label { font-size: 11px; color: var(--c-muted); margin-bottom: 6px; font-family: var(--c-mono); letter-spacing: 0.05em; }
-  .stat-val { font-size: 22px; font-weight: 700; font-family: var(--c-mono); }
-  .stat-val.accent { color: var(--c-accent); }
-  .stat-val.warn { color: var(--c-warn); }
-  .stat-val.accent2 { color: var(--c-accent2); }
-  .stat-val.danger { color: var(--c-danger); }
+    .nav-logo span {
+      color: var(--c-muted);
+    }
 
-  /* SURVIVAL BAR */
-  .survival-section {
-    background: var(--c-surface);
-    border: 1px solid var(--c-border);
-    border-radius: 8px;
-    padding: 18px 20px;
-    margin-bottom: 20px;
-  }
-  .survival-title {
-    font-family: var(--c-mono);
-    font-size: 11px;
-    color: var(--c-muted);
-    letter-spacing: 0.08em;
-    margin-bottom: 14px;
-  }
-  .survival-row {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    margin-bottom: 10px;
-  }
-  .survival-row:last-child { margin-bottom: 0; }
-  .survival-name {
-    font-family: var(--c-mono);
-    font-size: 13px;
-    width: 36px;
-  }
-  .survival-bar-wrap {
-    flex: 1;
-    height: 8px;
-    background: var(--c-border);
-    border-radius: 4px;
-    overflow: hidden;
-  }
-  .survival-bar-fill {
-    height: 100%;
-    border-radius: 4px;
-    transition: width 1s cubic-bezier(0.4,0,0.2,1);
-  }
-  .survival-status {
-    font-family: var(--c-mono);
-    font-size: 11px;
-    width: 60px;
-    text-align: right;
-  }
-  .done { color: var(--c-accent); }
-  .miss { color: var(--c-danger); }
+    .nav-tab {
+      font-family: var(--c-mono);
+      font-size: 11px;
+      letter-spacing: 0.06em;
+      color: var(--c-muted);
+      padding: 14px 14px;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      white-space: nowrap;
+      transition: color 0.15s, border-color 0.15s, background 0.15s;
+      background: none;
+      border-top: none;
+      border-left: none;
+      border-right: none;
+      flex-shrink: 0;
+    }
 
-  /* SCORE TABLE */
-  .score-table {
-    background: var(--c-surface);
-    border: 1px solid var(--c-border);
-    border-radius: 8px;
-    overflow: hidden;
-    margin-bottom: 20px;
-  }
-  .score-row {
-    display: grid;
-    grid-template-columns: 32px 1fr 80px 80px;
-    align-items: center;
-    gap: 12px;
-    padding: 12px 16px;
-    border-bottom: 1px solid var(--c-border);
-    transition: background 0.1s;
-  }
-  .score-row:last-child { border-bottom: none; }
-  .score-row.header { background: var(--c-surface2); }
-  .rank-num { font-family: var(--c-mono); font-size: 16px; font-weight: 700; }
-  .rank-1 { color: var(--c-accent); }
-  .rank-2 { color: var(--c-accent2); }
-  .rank-3 { color: var(--c-warn); }
-  .score-name { font-size: 14px; }
-  .score-pts { font-family: var(--c-mono); font-size: 13px; text-align: right; }
-  .score-streak { font-family: var(--c-mono); font-size: 12px; color: var(--c-muted); text-align: right; }
-  .badge {
-    display: inline-block;
-    font-size: 10px;
-    padding: 2px 7px;
-    border-radius: 3px;
-    margin-left: 8px;
-    font-family: var(--c-mono);
-    letter-spacing: 0.04em;
-  }
-  .badge-gold { background: #2a2000; color: var(--c-warn); border: 1px solid #3a3000; }
-  .badge-silver { background: #001a2a; color: var(--c-accent2); border: 1px solid #002a3a; }
-  .badge-bronze { background: #1a1a00; color: #a0a060; border: 1px solid #2a2a10; }
+    .nav-tab:hover {
+      color: var(--c-text);
+    }
 
-  /* CHECKIN FORM */
-  .form-card {
-    background: var(--c-surface);
-    border: 1px solid var(--c-border);
-    border-radius: 8px;
-    padding: 24px;
-    margin-bottom: 20px;
-  }
-  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-  .form-group { display: flex; flex-direction: column; gap: 6px; }
-  .form-group.full { grid-column: 1 / -1; }
-  .form-label { font-size: 11px; color: var(--c-muted); font-family: var(--c-mono); letter-spacing: 0.06em; }
-  .form-select, .form-input {
-    background: var(--c-surface2);
-    border: 1px solid var(--c-border);
-    border-radius: 6px;
-    color: var(--c-text);
-    font-family: var(--c-sans);
-    font-size: 14px;
-    padding: 9px 12px;
-    width: 100%;
-    outline: none;
-    transition: border-color 0.15s;
-    -webkit-appearance: none;
-  }
-  .form-select:focus, .form-input:focus { border-color: var(--c-accent); }
-  .type-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
-  .type-btn {
-    background: var(--c-surface2);
-    border: 1px solid var(--c-border);
-    border-radius: 6px;
-    color: var(--c-muted);
-    font-family: var(--c-mono);
-    font-size: 11px;
-    padding: 10px 8px;
-    cursor: pointer;
-    text-align: center;
-    transition: all 0.15s;
-    letter-spacing: 0.04em;
-  }
-  .type-btn:hover { border-color: var(--c-accent); color: var(--c-text); }
-  .type-btn.selected { border-color: var(--c-accent); color: var(--c-accent); background: #1a2000; }
-  .submit-btn {
-    background: var(--c-accent);
-    color: #0f0f0f;
-    border: none;
-    border-radius: 6px;
-    font-family: var(--c-mono);
-    font-size: 13px;
-    font-weight: 700;
-    padding: 13px 24px;
-    cursor: pointer;
-    width: 100%;
-    letter-spacing: 0.06em;
-    margin-top: 8px;
-    transition: opacity 0.15s, transform 0.1s;
-  }
-  .submit-btn:hover { opacity: 0.85; }
-  .submit-btn:active { transform: scale(0.98); }
+    .nav-tab.active {
+      color: var(--c-accent);
+      border-bottom-color: var(--c-accent);
+    }
 
-  /* LEADERBOARD */
-  .title-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 5px 12px;
-    border-radius: 4px;
-    font-family: var(--c-mono);
-    font-size: 11px;
-    margin-bottom: 8px;
-  }
-  .title-row {
-    background: var(--c-surface);
-    border: 1px solid var(--c-border);
-    border-radius: 8px;
-    padding: 16px 20px;
-    margin-bottom: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-  .title-name { font-size: 15px; font-weight: 500; }
-  .title-sub { font-size: 12px; color: var(--c-muted); margin-top: 2px; }
+    .page {
+      display: none;
+      padding: 24px 20px;
+      max-width: 920px;
+      margin: 0 auto;
+      width: 100%;
+    }
 
-  /* HEATMAP */
-  .heatmap-wrap { margin-bottom: 24px; }
-  .heatmap-person { margin-bottom: 20px; }
-  .heatmap-person-name {
-    font-family: var(--c-mono);
-    font-size: 12px;
-    color: var(--c-muted);
-    margin-bottom: 8px;
-    letter-spacing: 0.06em;
-  }
-  .heatmap-grid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 3px;
-  }
-  .heatmap-cell {
-    width: 14px;
-    height: 14px;
-    border-radius: 2px;
-    background: var(--c-border);
-  }
-  .heatmap-cell.d1 { background: #1e2d00; }
-  .heatmap-cell.d2 { background: #3d5a00; }
-  .heatmap-cell.d3 { background: #7aaa00; }
-  .heatmap-cell.d4 { background: var(--c-accent); }
+    .page.active {
+      display: block;
+    }
 
-  /* RULES */
-  .rule-block {
-    background: var(--c-surface);
-    border: 1px solid var(--c-border);
-    border-radius: 8px;
-    padding: 20px 22px;
-    margin-bottom: 12px;
-  }
-  .rule-head {
-    font-family: var(--c-mono);
-    font-size: 12px;
-    color: var(--c-accent);
-    letter-spacing: 0.08em;
-    margin-bottom: 12px;
-  }
-  .rule-item {
-    display: flex;
-    gap: 12px;
-    padding: 7px 0;
-    border-bottom: 1px solid var(--c-border);
-    font-size: 13px;
-    line-height: 1.6;
-  }
-  .rule-item:last-child { border-bottom: none; padding-bottom: 0; }
-  .rule-dot { color: var(--c-accent); font-family: var(--c-mono); flex-shrink: 0; margin-top: 1px; }
+    .section-label {
+      font-family: var(--c-mono);
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      color: var(--c-muted);
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
 
-  /* CHART AREA */
-  .chart-wrap {
-    background: var(--c-surface);
-    border: 1px solid var(--c-border);
-    border-radius: 8px;
-    padding: 18px 20px;
-    margin-bottom: 16px;
-  }
-  .chart-title { font-family: var(--c-mono); font-size: 11px; color: var(--c-muted); margin-bottom: 14px; letter-spacing: 0.06em; }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 10px;
+      margin-bottom: 20px;
+    }
 
-  /* TOAST */
-  .toast {
-    position: fixed;
-    bottom: 24px;
-    left: 50%;
-    transform: translateX(-50%) translateY(80px);
-    background: var(--c-accent);
-    color: #0f0f0f;
-    font-family: var(--c-mono);
-    font-size: 13px;
-    font-weight: 700;
-    padding: 12px 24px;
-    border-radius: 6px;
-    z-index: 999;
-    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-    pointer-events: none;
-  }
-  .toast.show { transform: translateX(-50%) translateY(0); }
+    .stat-card {
+      background: var(--c-surface);
+      border: 1px solid var(--c-border);
+      border-radius: 8px;
+      padding: 14px 16px;
+      transition: background 0.2s, border-color 0.2s;
+    }
 
-  @media (max-width: 500px) {
-    .form-grid { grid-template-columns: 1fr; }
-    .form-group.full { grid-column: 1; }
-    .stat-grid { grid-template-columns: repeat(2, 1fr); }
-    .score-row { grid-template-columns: 28px 1fr 70px; }
-    .score-streak { display: none; }
-  }
-</style>
+    .stat-label {
+      font-size: 11px;
+      color: var(--c-muted);
+      margin-bottom: 6px;
+      font-family: var(--c-mono);
+      letter-spacing: 0.05em;
+    }
 
-<div class="app">
-  <nav class="nav">
-    <div class="nav-logo">// IRON<span>PACT</span></div>
-    <button class="nav-tab active" onclick="showPage('dashboard')">仪表盘</button>
-    <button class="nav-tab" onclick="showPage('checkin')">打卡</button>
-    <button class="nav-tab" onclick="showPage('leaderboard')">排行榜</button>
-    <button class="nav-tab" onclick="showPage('analytics')">趋势</button>
-    <button class="nav-tab" onclick="showPage('rules')">规则</button>
-  </nav>
+    .stat-val {
+      font-size: 22px;
+      font-weight: 700;
+      font-family: var(--c-mono);
+    }
 
-  <!-- DASHBOARD -->
-  <div class="page active" id="page-dashboard">
-    <p class="section-label" style="margin-top:4px">今日状态 · 2025年1月</p>
+    .stat-val.accent { color: var(--c-accent); }
+    .stat-val.warn { color: var(--c-warn); }
+    .stat-val.accent2 { color: var(--c-accent2); }
+    .stat-val.danger { color: var(--c-danger); }
 
-    <div class="survival-section">
-      <div class="survival-title">// 今日存活状态</div>
-      <div class="survival-row">
-        <span class="survival-name">桥</span>
-        <div class="survival-bar-wrap"><div class="survival-bar-fill" id="bar-qiao" style="width:0%;background:var(--c-accent)"></div></div>
-        <span class="survival-status done">✓ 完成</span>
-      </div>
-      <div class="survival-row">
-        <span class="survival-name">A</span>
-        <div class="survival-bar-wrap"><div class="survival-bar-fill" id="bar-a" style="width:0%;background:var(--c-accent2)"></div></div>
-        <span class="survival-status done">✓ 完成</span>
-      </div>
-      <div class="survival-row">
-        <span class="survival-name">B</span>
-        <div class="survival-bar-wrap"><div class="survival-bar-fill" id="bar-b" style="width:0%;background:var(--c-border)"></div></div>
-        <span class="survival-status miss">✗ 未打</span>
-      </div>
-    </div>
+    .survival-section {
+      background: var(--c-surface);
+      border: 1px solid var(--c-border);
+      border-radius: 8px;
+      padding: 18px 20px;
+      margin-bottom: 20px;
+      transition: background 0.2s, border-color 0.2s;
+    }
 
-    <div class="stat-grid">
-      <div class="stat-card">
-        <div class="stat-label">本周积分榜首</div>
-        <div class="stat-val accent">桥</div>
-        <div style="font-size:12px;color:var(--c-muted);margin-top:4px;font-family:var(--c-mono)">142 pts</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">罚款池余额</div>
-        <div class="stat-val warn">¥ 85</div>
-        <div style="font-size:12px;color:var(--c-muted);margin-top:4px;font-family:var(--c-mono)">本月累计</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">本周完成率</div>
-        <div class="stat-val accent2">78%</div>
-        <div style="font-size:12px;color:var(--c-muted);margin-top:4px;font-family:var(--c-mono)">↑ vs上周</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">最长连续天数</div>
-        <div class="stat-val" style="color:var(--c-purple)">14天</div>
-        <div style="font-size:12px;color:var(--c-muted);margin-top:4px;font-family:var(--c-mono)">桥 保持中</div>
-      </div>
-    </div>
+    .survival-title {
+      font-family: var(--c-mono);
+      font-size: 11px;
+      color: var(--c-muted);
+      letter-spacing: 0.08em;
+      margin-bottom: 14px;
+    }
 
-    <p class="section-label">本周积分排行</p>
-    <div class="score-table">
-      <div class="score-row header">
-        <span style="font-family:var(--c-mono);font-size:10px;color:var(--c-muted)">#</span>
-        <span style="font-family:var(--c-mono);font-size:10px;color:var(--c-muted)">成员</span>
-        <span style="font-family:var(--c-mono);font-size:10px;color:var(--c-muted);text-align:right">积分</span>
-        <span style="font-family:var(--c-mono);font-size:10px;color:var(--c-muted);text-align:right">连击</span>
-      </div>
-      <div class="score-row">
-        <span class="rank-num rank-1">01</span>
-        <span class="score-name">桥 <span class="badge badge-gold">黄金自律怪</span></span>
-        <span class="score-pts accent">142</span>
-        <span class="score-streak">🔥 14</span>
-      </div>
-      <div class="score-row">
-        <span class="rank-num rank-2">02</span>
-        <span class="score-name">A <span class="badge badge-silver">白银连击手</span></span>
-        <span class="score-pts accent2">118</span>
-        <span class="score-streak">🔥 7</span>
-      </div>
-      <div class="score-row">
-        <span class="rank-num rank-3">03</span>
-        <span class="score-name">B <span class="badge badge-bronze">青铜存活者</span></span>
-        <span class="score-pts" style="color:var(--c-warn)">76</span>
-        <span class="score-streak" style="color:var(--c-danger)">💀 0</span>
-      </div>
-    </div>
-  </div>
+    .survival-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 10px;
+    }
 
-  <!-- CHECKIN -->
-  <div class="page" id="page-checkin">
-    <p class="section-label" style="margin-top:4px">提交打卡</p>
-    <div class="form-card">
-      <div class="form-grid">
-        <div class="form-group">
-          <label class="form-label">// 用户</label>
-          <select class="form-select">
-            <option>桥</option>
-            <option>A</option>
-            <option>B</option>
-          </select>
+    .survival-row:last-child {
+      margin-bottom: 0;
+    }
+
+    .survival-name {
+      font-family: var(--c-mono);
+      font-size: 13px;
+      width: 36px;
+      flex-shrink: 0;
+    }
+
+    .survival-bar-wrap {
+      flex: 1;
+      height: 8px;
+      background: var(--c-border);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .survival-bar-fill {
+      height: 100%;
+      border-radius: 4px;
+      transition: width 0.8s cubic-bezier(0.4,0,0.2,1);
+    }
+
+    .survival-status {
+      font-family: var(--c-mono);
+      font-size: 11px;
+      width: 64px;
+      text-align: right;
+      flex-shrink: 0;
+    }
+
+    .done { color: var(--c-accent); }
+    .miss { color: var(--c-danger); }
+
+    .score-table {
+      background: var(--c-surface);
+      border: 1px solid var(--c-border);
+      border-radius: 8px;
+      overflow: hidden;
+      margin-bottom: 20px;
+      transition: background 0.2s, border-color 0.2s;
+    }
+
+    .score-row {
+      display: grid;
+      grid-template-columns: 36px 1fr 90px 90px;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--c-border);
+      transition: background 0.1s;
+    }
+
+    .score-row:last-child { border-bottom: none; }
+    .score-row.header { background: var(--c-surface2); }
+
+    .rank-num {
+      font-family: var(--c-mono);
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    .rank-1 { color: var(--c-accent); }
+    .rank-2 { color: var(--c-accent2); }
+    .rank-3 { color: var(--c-warn); }
+
+    .score-name { font-size: 14px; }
+    .score-pts {
+      font-family: var(--c-mono);
+      font-size: 13px;
+      text-align: right;
+    }
+
+    .score-streak {
+      font-family: var(--c-mono);
+      font-size: 12px;
+      color: var(--c-muted);
+      text-align: right;
+    }
+
+    .badge {
+      display: inline-block;
+      font-size: 10px;
+      padding: 2px 7px;
+      border-radius: 3px;
+      margin-left: 8px;
+      font-family: var(--c-mono);
+      letter-spacing: 0.04em;
+    }
+
+    .badge-gold {
+      background: var(--c-surface2);
+      color: var(--c-text);
+      border: 1px solid var(--c-border);
+    }
+
+    .badge-silver {
+      background: var(--c-surface2);
+      color: var(--c-muted);
+      border: 1px solid var(--c-border);
+    }
+
+    .badge-bronze {
+      background: var(--c-surface2);
+      color: var(--c-muted);
+      border: 1px solid var(--c-border);
+    }
+
+    .form-card {
+      background: var(--c-surface);
+      border: 1px solid var(--c-border);
+      border-radius: 8px;
+      padding: 24px;
+      margin-bottom: 20px;
+      transition: background 0.2s, border-color 0.2s;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .form-group.full {
+      grid-column: 1 / -1;
+    }
+
+    .form-label {
+      font-size: 11px;
+      color: var(--c-muted);
+      font-family: var(--c-mono);
+      letter-spacing: 0.06em;
+    }
+
+    .form-select,
+    .form-input {
+      background: var(--c-surface2);
+      border: 1px solid var(--c-border);
+      border-radius: 6px;
+      color: var(--c-text);
+      font-family: var(--c-sans);
+      font-size: 14px;
+      padding: 9px 12px;
+      width: 100%;
+      outline: none;
+      transition: border-color 0.15s, background 0.2s, color 0.2s;
+      -webkit-appearance: none;
+    }
+
+    .form-select:focus,
+    .form-input:focus {
+      border-color: var(--c-accent);
+    }
+
+    .type-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+    }
+
+    .type-btn {
+      background: var(--c-surface2);
+      border: 1px solid var(--c-border);
+      border-radius: 6px;
+      color: var(--c-muted);
+      font-family: var(--c-mono);
+      font-size: 11px;
+      padding: 10px 8px;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.15s;
+      letter-spacing: 0.04em;
+    }
+
+    .type-btn:hover {
+      border-color: var(--c-accent);
+      color: var(--c-text);
+    }
+
+    .type-btn.selected {
+      border-color: var(--c-accent);
+      color: var(--c-accent);
+      background: var(--c-surface);
+    }
+
+    .submit-btn {
+      background: var(--c-accent);
+      color: var(--c-bg);
+      border: none;
+      border-radius: 6px;
+      font-family: var(--c-mono);
+      font-size: 13px;
+      font-weight: 700;
+      padding: 13px 24px;
+      cursor: pointer;
+      width: 100%;
+      letter-spacing: 0.06em;
+      margin-top: 8px;
+      transition: opacity 0.15s, transform 0.1s, background 0.2s, color 0.2s;
+    }
+
+    .submit-btn:hover { opacity: 0.85; }
+    .submit-btn:active { transform: scale(0.98); }
+
+    .title-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 5px 12px;
+      border-radius: 4px;
+      font-family: var(--c-mono);
+      font-size: 11px;
+      margin-bottom: 8px;
+      background: var(--c-surface2);
+      border: 1px solid var(--c-border);
+    }
+
+    .title-row {
+      background: var(--c-surface);
+      border: 1px solid var(--c-border);
+      border-radius: 8px;
+      padding: 16px 20px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: background 0.2s, border-color 0.2s;
+    }
+
+    .title-name { font-size: 15px; font-weight: 500; }
+    .title-sub { font-size: 12px; color: var(--c-muted); margin-top: 2px; }
+
+    .heatmap-wrap { margin-bottom: 24px; }
+    .heatmap-person { margin-bottom: 20px; }
+    .heatmap-person-name {
+      font-family: var(--c-mono);
+      font-size: 12px;
+      color: var(--c-muted);
+      margin-bottom: 8px;
+      letter-spacing: 0.06em;
+    }
+
+    .heatmap-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 3px;
+    }
+
+    .heatmap-cell {
+      width: 14px;
+      height: 14px;
+      border-radius: 2px;
+      background: var(--c-border);
+    }
+
+    .heatmap-cell.d1 { background: #3a3a3a; }
+    .heatmap-cell.d2 { background: #6a6a6a; }
+    .heatmap-cell.d3 { background: #9a9a9a; }
+    .heatmap-cell.d4 { background: #dcdcdc; }
+
+    body.light-theme .heatmap-cell.d1 { background: #cccccc; }
+    body.light-theme .heatmap-cell.d2 { background: #aaaaaa; }
+    body.light-theme .heatmap-cell.d3 { background: #777777; }
+    body.light-theme .heatmap-cell.d4 { background: #222222; }
+
+    .rule-block {
+      background: var(--c-surface);
+      border: 1px solid var(--c-border);
+      border-radius: 8px;
+      padding: 20px 22px;
+      margin-bottom: 12px;
+      transition: background 0.2s, border-color 0.2s;
+    }
+
+    .rule-head {
+      font-family: var(--c-mono);
+      font-size: 12px;
+      color: var(--c-accent);
+      letter-spacing: 0.08em;
+      margin-bottom: 12px;
+    }
+
+    .rule-item {
+      display: flex;
+      gap: 12px;
+      padding: 7px 0;
+      border-bottom: 1px solid var(--c-border);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .rule-item:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+
+    .rule-dot {
+      color: var(--c-accent);
+      font-family: var(--c-mono);
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .chart-wrap {
+      background: var(--c-surface);
+      border: 1px solid var(--c-border);
+      border-radius: 8px;
+      padding: 18px 20px;
+      margin-bottom: 16px;
+      transition: background 0.2s, border-color 0.2s;
+    }
+
+    .chart-title {
+      font-family: var(--c-mono);
+      font-size: 11px;
+      color: var(--c-muted);
+      margin-bottom: 14px;
+      letter-spacing: 0.06em;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: var(--c-accent);
+      color: var(--c-bg);
+      font-family: var(--c-mono);
+      font-size: 13px;
+      font-weight: 700;
+      padding: 12px 24px;
+      border-radius: 6px;
+      z-index: 999;
+      transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      pointer-events: none;
+    }
+
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+    }
+
+    code {
+      background: var(--c-surface2);
+      padding: 1px 5px;
+      border-radius: 3px;
+      font-family: var(--c-mono);
+    }
+
+    @media (max-width: 768px) {
+      .page {
+        padding: 16px 12px;
+      }
+
+      .nav {
+        padding: 0 10px;
+      }
+
+      .nav-logo {
+        margin-right: 12px;
+        font-size: 12px;
+      }
+
+      .nav-tab {
+        padding: 12px 10px;
+        font-size: 10px;
+      }
+
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .form-group.full {
+        grid-column: 1;
+      }
+
+      .stat-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .score-row {
+        grid-template-columns: 28px 1fr 60px;
+        gap: 8px;
+        padding: 10px 12px;
+      }
+
+      .score-streak {
+        display: none;
+      }
+
+      .survival-name {
+        width: 28px;
+        font-size: 12px;
+      }
+
+      .survival-status {
+        width: 48px;
+        font-size: 10px;
+      }
+
+      .type-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .form-card,
+      .rule-block,
+      .chart-wrap,
+      .survival-section {
+        padding: 16px;
+      }
+
+      .stat-val {
+        font-size: 18px;
+      }
+
+      .title-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+      }
+    }
+
+    @media (max-width: 500px) {
+      .stat-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .nav-logo {
+        display: none;
+      }
+
+      .survival-row {
+        gap: 8px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <nav class="nav">
+      <div class="nav-logo">// IRON<span>PACT</span></div>
+      <button class="nav-tab active" onclick="showPage('dashboard', this)">仪表盘</button>
+      <button class="nav-tab" onclick="showPage('checkin', this)">打卡</button>
+      <button class="nav-tab" onclick="showPage('leaderboard', this)">排行榜</button>
+      <button class="nav-tab" onclick="showPage('analytics', this)">趋势</button>
+      <button class="nav-tab" onclick="showPage('rules', this)">规则</button>
+      <button class="nav-tab" onclick="toggleTheme()">黑/白</button>
+    </nav>
+
+    <div class="page active" id="page-dashboard">
+      <p class="section-label" style="margin-top:4px">今日状态</p>
+
+      <div class="survival-section">
+        <div class="survival-title">// 今日存活状态</div>
+
+        <div class="survival-row">
+          <span class="survival-name">漾</span>
+          <div class="survival-bar-wrap">
+            <div class="survival-bar-fill" id="bar-yang" style="width:0%;background:var(--c-accent)"></div>
+          </div>
+          <span class="survival-status miss">--</span>
         </div>
-        <div class="form-group">
-          <label class="form-label">// 日期</label>
-          <input class="form-input" type="date" id="date-input">
+
+        <div class="survival-row">
+          <span class="survival-name">闪</span>
+          <div class="survival-bar-wrap">
+            <div class="survival-bar-fill" id="bar-shan" style="width:0%;background:var(--c-accent2)"></div>
+          </div>
+          <span class="survival-status miss">--</span>
         </div>
-        <div class="form-group full">
-          <label class="form-label">// 打卡类型</label>
-          <div class="type-grid">
-            <button class="type-btn selected" onclick="selectType(this)">健身房</button>
-            <button class="type-btn" onclick="selectType(this)">居家运动</button>
-            <button class="type-btn" onclick="selectType(this)">饮食达标</button>
-            <button class="type-btn" onclick="selectType(this)">补卡</button>
+
+        <div class="survival-row">
+          <span class="survival-name">源</span>
+          <div class="survival-bar-wrap">
+            <div class="survival-bar-fill" id="bar-yuan" style="width:0%;background:var(--c-warn)"></div>
+          </div>
+          <span class="survival-status miss">--</span>
+        </div>
+      </div>
+
+      <div class="stat-grid">
+        <div class="stat-card">
+          <div class="stat-label">本周积分榜首</div>
+          <div class="stat-val accent">--</div>
+          <div style="font-size:12px;color:var(--c-muted);margin-top:4px;font-family:var(--c-mono)">0 pts</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-label">公共池余额</div>
+          <div class="stat-val warn">¥ 0</div>
+          <div style="font-size:12px;color:var(--c-muted);margin-top:4px;font-family:var(--c-mono)">当前累计</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-label">本周完成率</div>
+          <div class="stat-val accent2">0%</div>
+          <div style="font-size:12px;color:var(--c-muted);margin-top:4px;font-family:var(--c-mono)">初始化状态</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-label">当前最长连续天数</div>
+          <div class="stat-val" style="color:var(--c-purple)">0天</div>
+          <div style="font-size:12px;color:var(--c-muted);margin-top:4px;font-family:var(--c-mono)">待开始</div>
+        </div>
+      </div>
+
+      <p class="section-label">本周积分排行</p>
+      <div class="score-table">
+        <div class="score-row header">
+          <span style="font-family:var(--c-mono);font-size:10px;color:var(--c-muted)">#</span>
+          <span style="font-family:var(--c-mono);font-size:10px;color:var(--c-muted)">成员</span>
+          <span style="font-family:var(--c-mono);font-size:10px;color:var(--c-muted);text-align:right">积分</span>
+          <span style="font-family:var(--c-mono);font-size:10px;color:var(--c-muted);text-align:right">状态</span>
+        </div>
+
+        <div class="score-row">
+          <span class="rank-num rank-1">01</span>
+          <span class="score-name">漾 <span class="badge badge-gold">待开始</span></span>
+          <span class="score-pts accent">0</span>
+          <span class="score-streak">--</span>
+        </div>
+
+        <div class="score-row">
+          <span class="rank-num rank-2">02</span>
+          <span class="score-name">闪 <span class="badge badge-silver">待开始</span></span>
+          <span class="score-pts accent2">0</span>
+          <span class="score-streak">--</span>
+        </div>
+
+        <div class="score-row">
+          <span class="rank-num rank-3">03</span>
+          <span class="score-name">源 <span class="badge badge-bronze">待开始</span></span>
+          <span class="score-pts" style="color:var(--c-warn)">0</span>
+          <span class="score-streak">--</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="page" id="page-checkin">
+      <p class="section-label" style="margin-top:4px">提交打卡</p>
+
+      <div class="form-card">
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">// 用户</label>
+            <select class="form-select" id="user-select">
+              <option>漾</option>
+              <option>闪</option>
+              <option>源</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">// 日期</label>
+            <input class="form-input" type="date" id="date-input">
+          </div>
+
+          <div class="form-group full">
+            <label class="form-label">// 打卡类型</label>
+            <div class="type-grid">
+              <button type="button" class="type-btn selected" onclick="selectType(this)">健身房</button>
+              <button type="button" class="type-btn" onclick="selectType(this)">居家运动</button>
+              <button type="button" class="type-btn" onclick="selectType(this)">饮食稳定</button>
+              <button type="button" class="type-btn" onclick="selectType(this)">补卡</button>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">// 时长 (分钟)</label>
+            <input class="form-input" type="number" placeholder="20" min="0" max="300">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">// 步数 (可选)</label>
+            <input class="form-input" type="number" placeholder="8000">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">// 体重 kg (可选)</label>
+            <input class="form-input" type="number" placeholder="50.0" step="0.1">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">// 证据链接 (可选)</label>
+            <input class="form-input" type="text" placeholder="https://...">
+          </div>
+
+          <div class="form-group full">
+            <label class="form-label">// 备注</label>
+            <input class="form-input" type="text" placeholder="例如：快走20分钟 / 经期无暴食 / 补卡说明">
           </div>
         </div>
-        <div class="form-group">
-          <label class="form-label">// 时长 (分钟)</label>
-          <input class="form-input" type="number" placeholder="45" min="10" max="300">
+
+        <button class="submit-btn" onclick="submitCheckin()">[ 提交打卡 → GitHub Issue ]</button>
+      </div>
+
+      <div class="rule-block">
+        <div class="rule-head">// 当前执行逻辑</div>
+        <div class="rule-item"><span class="rule-dot">→</span><span>点击提交后，会跳转到 GitHub Issue Form 页面</span></div>
+        <div class="rule-item"><span class="rule-dot">→</span><span>提交 Issue 后，GitHub Actions 负责解析和更新数据</span></div>
+        <div class="rule-item"><span class="rule-dot">→</span><span>页面后续会读取 <code>data/checkins.json</code> 自动刷新状态</span></div>
+      </div>
+    </div>
+
+    <div class="page" id="page-leaderboard">
+      <p class="section-label" style="margin-top:4px">称号 & 历史</p>
+
+      <div class="title-row">
+        <div>
+          <div class="title-name">漾</div>
+          <div class="title-sub">当前积分 0 · 当前连续 0 天</div>
         </div>
-        <div class="form-group">
-          <label class="form-label">// 步数 (可选)</label>
-          <input class="form-input" type="number" placeholder="8000">
-        </div>
-        <div class="form-group">
-          <label class="form-label">// 体重 kg (可选)</label>
-          <input class="form-input" type="number" placeholder="70.5" step="0.1">
-        </div>
-        <div class="form-group">
-          <label class="form-label">// 证据链接 (可选)</label>
-          <input class="form-input" type="text" placeholder="screenshot.jpg">
-        </div>
-        <div class="form-group full">
-          <label class="form-label">// 备注</label>
-          <input class="form-input" type="text" placeholder="今天状态超好，撸铁2小时">
+        <div style="text-align:right">
+          <div class="title-badge">待开始</div>
         </div>
       </div>
-      <button class="submit-btn" onclick="submitCheckin()">[ 提交打卡 → GitHub Issue ]</button>
+
+      <div class="title-row">
+        <div>
+          <div class="title-name">闪</div>
+          <div class="title-sub">当前积分 0 · 当前连续 0 天</div>
+        </div>
+        <div style="text-align:right">
+          <div class="title-badge">待开始</div>
+        </div>
+      </div>
+
+      <div class="title-row">
+        <div>
+          <div class="title-name">源</div>
+          <div class="title-sub">当前积分 0 · 当前连续 0 天</div>
+        </div>
+        <div style="text-align:right">
+          <div class="title-badge">待开始</div>
+        </div>
+      </div>
+
+      <p class="section-label" style="margin-top:20px">公共池记录</p>
+      <div class="score-table">
+        <div class="score-row header">
+          <span style="font-family:var(--c-mono);font-size:10px;color:var(--c-muted)">#</span>
+          <span style="font-family:var(--c-mono);font-size:10px;color:var(--c-muted)">事件</span>
+          <span style="font-family:var(--c-mono);font-size:10px;color:var(--c-muted);text-align:right">金额</span>
+          <span style="font-family:var(--c-mono);font-size:10px;color:var(--c-muted);text-align:right">日期</span>
+        </div>
+
+        <div class="score-row">
+          <span style="font-family:var(--c-mono);color:var(--c-muted)">--</span>
+          <span class="score-name" style="color:var(--c-muted)">暂无记录</span>
+          <span class="score-pts" style="color:var(--c-muted)">--</span>
+          <span class="score-streak">--</span>
+        </div>
+      </div>
     </div>
-    <div class="rule-block" style="border-color:#1a2a00">
-      <div class="rule-head">// 实际工作流</div>
-      <div class="rule-item"><span class="rule-dot">→</span><span>点击提交后，将跳转到 GitHub Issue Form 页面</span></div>
-      <div class="rule-item"><span class="rule-dot">→</span><span>提交 Issue 后，GitHub Actions 自动触发解析</span></div>
-      <div class="rule-item"><span class="rule-dot">→</span><span>Actions 更新 <code style="background:var(--c-surface2);padding:1px 5px;border-radius:3px;font-family:var(--c-mono)">data/checkins.json</code></span></div>
-      <div class="rule-item"><span class="rule-dot">→</span><span>Pages 重新部署，本页数据自动刷新</span></div>
+
+    <div class="page" id="page-analytics">
+      <p class="section-label" style="margin-top:4px">趋势分析 · 初始化状态</p>
+
+      <div class="chart-wrap">
+        <div class="chart-title">// 打卡热力图</div>
+        <div class="heatmap-wrap">
+          <div class="heatmap-person">
+            <div class="heatmap-person-name">漾</div>
+            <div class="heatmap-grid" id="heat-yang"></div>
+          </div>
+
+          <div class="heatmap-person">
+            <div class="heatmap-person-name">闪</div>
+            <div class="heatmap-grid" id="heat-shan"></div>
+          </div>
+
+          <div class="heatmap-person">
+            <div class="heatmap-person-name">源</div>
+            <div class="heatmap-grid" id="heat-yuan"></div>
+          </div>
+
+          <div style="display:flex;gap:10px;margin-top:10px;align-items:center;flex-wrap:wrap">
+            <span style="font-size:11px;color:var(--c-muted);font-family:var(--c-mono)">低</span>
+            <div style="width:12px;height:12px;border-radius:2px;background:var(--c-border)"></div>
+            <div style="width:12px;height:12px;border-radius:2px;background:#3a3a3a"></div>
+            <div style="width:12px;height:12px;border-radius:2px;background:#6a6a6a"></div>
+            <div style="width:12px;height:12px;border-radius:2px;background:#9a9a9a"></div>
+            <div style="width:12px;height:12px;border-radius:2px;background:#dcdcdc"></div>
+            <span style="font-size:11px;color:var(--c-muted);font-family:var(--c-mono)">高</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="chart-wrap">
+        <div class="chart-title">// 每周完成率</div>
+        <div style="position:relative;width:100%;height:220px">
+          <canvas id="trendChart" role="img" aria-label="每周完成率折线图">趋势图</canvas>
+        </div>
+      </div>
+
+      <div class="stat-grid">
+        <div class="stat-card">
+          <div class="stat-label">本月整体完成率</div>
+          <div class="stat-val accent">0%</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-label">公共池累计</div>
+          <div class="stat-val warn">¥ 0</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-label">总打卡次数</div>
+          <div class="stat-val accent2">0</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-label">全员完成天数</div>
+          <div class="stat-val" style="color:var(--c-purple)">0天</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="page" id="page-rules">
+      <p class="section-label" style="margin-top:4px">群规 · 当前版本</p>
+
+      <div class="rule-block">
+        <div class="rule-head">// 小荷包规则</div>
+        <div class="rule-item"><span class="rule-dot">¥</span><span>每人先放 50 元进入支付宝小荷包</span></div>
+        <div class="rule-item"><span class="rule-dot">¥</span><span>当天没打卡 = -5 元进入公共池</span></div>
+        <div class="rule-item"><span class="rule-dot">¥</span><span>每周日结算：第一名拿公共池 60%，第二名拿 30%，第三名拿 10%</span></div>
+        <div class="rule-item"><span class="rule-dot">¥</span><span>如果三人都正常完成，则押金沿用到下个月</span></div>
+        <div class="rule-item"><span class="rule-dot">¥</span><span>直到谁先达到自己设立的目标，谁可以一次性拿走全部押金</span></div>
+      </div>
+
+      <div class="rule-block">
+        <div class="rule-head">// 补救机制</div>
+        <div class="rule-item"><span class="rule-dot">→</span><span>每人每周有 3 次补卡机会，可以补 3 天，不扣钱</span></div>
+        <div class="rule-item"><span class="rule-dot">→</span><span>整体按“上四休三”理解，允许有休息和缓冲空间</span></div>
+        <div class="rule-item"><span class="rule-dot">→</span><span>补卡用于修复中断，不用于制造完美假象</span></div>
+      </div>
+
+      <div class="rule-block">
+        <div class="rule-head">// 特殊情况</div>
+        <div class="rule-item"><span class="rule-dot">01</span><span>经期不计入运动打卡要求</span></div>
+        <div class="rule-item"><span class="rule-dot">02</span><span>如经期当天未发生暴食行为，则算打卡完成</span></div>
+      </div>
+
+      <div class="rule-block">
+        <div class="rule-head">// 最重要的原则</div>
+        <div class="rule-item"><span class="rule-dot">!</span><span>允许有断掉的，但不能连续断，断开后要及时开始</span></div>
+        <div class="rule-item"><span class="rule-dot">!</span><span>最低可以只做 20 分钟</span></div>
+        <div class="rule-item"><span class="rule-dot">!</span><span>机制的目标是让三个人长期不断线，而不是制造压力表演</span></div>
+      </div>
+
+      <div class="rule-block">
+        <div class="rule-head">// 技术说明</div>
+        <div class="rule-item"><span class="rule-dot">→</span><span>所有打卡数据会保存在 GitHub 仓库中</span></div>
+        <div class="rule-item"><span class="rule-dot">→</span><span>后续由 GitHub Actions 自动解析与更新</span></div>
+        <div class="rule-item"><span class="rule-dot">→</span><span>争议以仓库记录为准</span></div>
+      </div>
     </div>
   </div>
 
-  <!-- LEADERBOARD -->
-  <div class="page" id="page-leaderboard">
-    <p class="section-label" style="margin-top:4px">称号 & 历史</p>
+  <div class="toast" id="toast">[ 即将跳转到打卡表单 ]</div>
 
-    <div class="title-row">
-      <div>
-        <div class="title-name">桥</div>
-        <div class="title-sub">连续 14 天 · 本月 142 分</div>
-      </div>
-      <div style="text-align:right">
-        <div class="title-badge" style="background:#2a2000;color:var(--c-warn);border:1px solid #3a3000">🏆 黄金自律怪</div>
-        <div style="font-family:var(--c-mono);font-size:11px;color:var(--c-muted)">本周王者</div>
-      </div>
-    </div>
-    <div class="title-row">
-      <div>
-        <div class="title-name">A</div>
-        <div class="title-sub">连续 7 天 · 本月 118 分</div>
-      </div>
-      <div style="text-align:right">
-        <div class="title-badge" style="background:#001a2a;color:var(--c-accent2);border:1px solid #002a3a">⚡ 白银连击手</div>
-      </div>
-    </div>
-    <div class="title-row">
-      <div>
-        <div class="title-name">B</div>
-        <div class="title-sub">连续 0 天 · 本月 76 分</div>
-      </div>
-      <div style="text-align:right">
-        <div class="title-badge" style="background:#1a0a00;color:var(--c-danger);border:1px solid #2a1000">💀 青铜存活者</div>
-      </div>
-    </div>
-
-    <p class="section-label" style="margin-top:20px">奖惩记录</p>
-    <div class="score-table">
-      <div class="score-row header">
-        <span style="font-family:var(--c-mono);font-size:10px;color:var(--c-muted)">#</span>
-        <span style="font-family:var(--c-mono);font-size:10px;color:var(--c-muted)">事件</span>
-        <span style="font-family:var(--c-mono);font-size:10px;color:var(--c-muted);text-align:right">金额</span>
-        <span style="font-family:var(--c-mono);font-size:10px;color:var(--c-muted);text-align:right">日期</span>
-      </div>
-      <div class="score-row">
-        <span style="font-family:var(--c-mono);color:var(--c-danger)">罚</span>
-        <span class="score-name" style="color:var(--c-muted)">B 连续缺勤 3 天</span>
-        <span class="score-pts" style="color:var(--c-danger)">-¥30</span>
-        <span class="score-streak">01/12</span>
-      </div>
-      <div class="score-row">
-        <span style="font-family:var(--c-mono);color:var(--c-accent)">奖</span>
-        <span class="score-name" style="color:var(--c-muted)">桥 连续 10 天达成</span>
-        <span class="score-pts accent">+¥20</span>
-        <span class="score-streak">01/10</span>
-      </div>
-      <div class="score-row">
-        <span style="font-family:var(--c-mono);color:var(--c-danger)">罚</span>
-        <span class="score-name" style="color:var(--c-muted)">A 本周缺勤 2 次</span>
-        <span class="score-pts" style="color:var(--c-danger)">-¥20</span>
-        <span class="score-streak">01/07</span>
-      </div>
-      <div class="score-row">
-        <span style="font-family:var(--c-mono);color:var(--c-danger)">罚</span>
-        <span class="score-name" style="color:var(--c-muted)">B 首周缺勤 1 次</span>
-        <span class="score-pts" style="color:var(--c-danger)">-¥10</span>
-        <span class="score-streak">01/05</span>
-      </div>
-    </div>
-  </div>
-
-  <!-- ANALYTICS -->
-  <div class="page" id="page-analytics">
-    <p class="section-label" style="margin-top:4px">趋势分析 · 最近30天</p>
-
-    <div class="chart-wrap">
-      <div class="chart-title">// 打卡热力图</div>
-      <div class="heatmap-wrap">
-        <div class="heatmap-person" id="heatmap-qiao">
-          <div class="heatmap-person-name">桥</div>
-          <div class="heatmap-grid" id="heat-qiao"></div>
-        </div>
-        <div class="heatmap-person" id="heatmap-a">
-          <div class="heatmap-person-name">A</div>
-          <div class="heatmap-grid" id="heat-a"></div>
-        </div>
-        <div class="heatmap-person" id="heatmap-b">
-          <div class="heatmap-person-name">B</div>
-          <div class="heatmap-grid" id="heat-b"></div>
-        </div>
-        <div style="display:flex;gap:10px;margin-top:10px;align-items:center">
-          <span style="font-size:11px;color:var(--c-muted);font-family:var(--c-mono)">无</span>
-          <div style="width:12px;height:12px;border-radius:2px;background:var(--c-border)"></div>
-          <div style="width:12px;height:12px;border-radius:2px;background:#1e2d00"></div>
-          <div style="width:12px;height:12px;border-radius:2px;background:#3d5a00"></div>
-          <div style="width:12px;height:12px;border-radius:2px;background:#7aaa00"></div>
-          <div style="width:12px;height:12px;border-radius:2px;background:var(--c-accent)"></div>
-          <span style="font-size:11px;color:var(--c-muted);font-family:var(--c-mono)">多</span>
-        </div>
-      </div>
-    </div>
-
-    <div class="chart-wrap">
-      <div class="chart-title">// 每周完成率 & 罚款池变化</div>
-      <div style="position:relative;width:100%;height:200px">
-        <canvas id="trendChart" role="img" aria-label="每周完成率折线图，显示三人打卡完成率和罚款池变化趋势">周完成率趋势数据</canvas>
-      </div>
-    </div>
-
-    <div class="stat-grid">
-      <div class="stat-card">
-        <div class="stat-label">本月整体完成率</div>
-        <div class="stat-val accent">73%</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">罚款池累计</div>
-        <div class="stat-val warn">¥ 85</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">总打卡次数</div>
-        <div class="stat-val accent2">66</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">全员完成天数</div>
-        <div class="stat-val" style="color:var(--c-purple)">9天</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- RULES -->
-  <div class="page" id="page-rules">
-    <p class="section-label" style="margin-top:4px">群规 · 不可篡改</p>
-
-    <div class="rule-block">
-      <div class="rule-head">// 有效打卡定义</div>
-      <div class="rule-item"><span class="rule-dot">01</span><span>健身房：打卡记录 + 运动截图，≥30分钟</span></div>
-      <div class="rule-item"><span class="rule-dot">02</span><span>居家运动：视频/截图存档，≥20分钟有效运动</span></div>
-      <div class="rule-item"><span class="rule-dot">03</span><span>饮食达标：当天饮食记录截图，不含奶茶/外卖垃圾食品</span></div>
-      <div class="rule-item"><span class="rule-dot">04</span><span>补卡：需提前申请，每月最多 2 次，不累计积分</span></div>
-    </div>
-
-    <div class="rule-block">
-      <div class="rule-head">// 积分规则</div>
-      <div class="rule-item"><span class="rule-dot">→</span><span>基础打卡：+5 分/次</span></div>
-      <div class="rule-item"><span class="rule-dot">→</span><span>连续 7 天：额外 +10 分</span></div>
-      <div class="rule-item"><span class="rule-dot">→</span><span>连续 14 天：额外 +25 分</span></div>
-      <div class="rule-item"><span class="rule-dot">→</span><span>超时运动（≥60min）：+3 分额外</span></div>
-      <div class="rule-item"><span class="rule-dot">→</span><span>全员完成日：三人各 +2 分</span></div>
-    </div>
-
-    <div class="rule-block">
-      <div class="rule-head">// 惩罚规则</div>
-      <div class="rule-item"><span class="rule-dot">!!</span><span>单次缺勤：罚款 ¥10，进入公共罚款池</span></div>
-      <div class="rule-item"><span class="rule-dot">!!</span><span>连续缺勤 3 天：额外惩罚 ¥30（总计 ¥60）</span></div>
-      <div class="rule-item"><span class="rule-dot">!!</span><span>当月连续缺勤 7 天：退出群，重新建群加入</span></div>
-    </div>
-
-    <div class="rule-block">
-      <div class="rule-head">// 奖励发放</div>
-      <div class="rule-item"><span class="rule-dot">★</span><span>月末积分最高者，独得罚款池 60%</span></div>
-      <div class="rule-item"><span class="rule-dot">★</span><span>连续 30 天达成：奖励池额外补贴 ¥50（由三人均摊）</span></div>
-      <div class="rule-item"><span class="rule-dot">★</span><span>月底三人共同决定奖励池剩余 40% 用途（可滚存）</span></div>
-    </div>
-
-    <div class="rule-block" style="border-color:#1a2a00">
-      <div class="rule-head">// 技术说明</div>
-      <div class="rule-item"><span class="rule-dot">→</span><span>所有打卡数据存储于 GitHub 仓库，版本可追踪，不可篡改</span></div>
-      <div class="rule-item"><span class="rule-dot">→</span><span>积分由 GitHub Actions 自动计算，无人工干预</span></div>
-      <div class="rule-item"><span class="rule-dot">→</span><span>争议以 Git commit 记录为准</span></div>
-    </div>
-  </div>
-</div>
-
-<div class="toast" id="toast">[ 打卡已提交 → Issue #42 ]</div>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
-<script>
-  function showPage(id) {
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-    document.getElementById('page-' + id).classList.add('active');
-    event.target.classList.add('active');
-  }
-
-  function selectType(btn) {
-    document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('selected'));
-    btn.classList.add('selected');
-  }
-
-  function submitCheckin() {
-    const t = document.getElementById('toast');
-    t.classList.add('show');
-    setTimeout(() => t.classList.remove('show'), 2800);
-  }
-
-  // Set today's date
-  const today = new Date();
-  const yyyy = today.getFullYear();
-  const mm = String(today.getMonth()+1).padStart(2,'0');
-  const dd = String(today.getDate()).padStart(2,'0');
-  document.getElementById('date-input').value = `${yyyy}-${mm}-${dd}`;
-
-  // Animate bars
-  setTimeout(() => {
-    document.getElementById('bar-qiao').style.width = '100%';
-    document.getElementById('bar-a').style.width = '100%';
-    document.getElementById('bar-b').style.width = '15%';
-  }, 200);
-
-  // Heatmap generation
-  function generateHeatmap(containerId, rate) {
-    const grid = document.getElementById(containerId);
-    for (let i = 0; i < 30; i++) {
-      const cell = document.createElement('div');
-      cell.className = 'heatmap-cell';
-      const r = Math.random();
-      if (r < rate) {
-        const intensity = Math.random();
-        if (intensity > 0.7) cell.classList.add('d4');
-        else if (intensity > 0.4) cell.classList.add('d3');
-        else if (intensity > 0.2) cell.classList.add('d2');
-        else cell.classList.add('d1');
-      }
-      grid.appendChild(cell);
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+  <script>
+    function showPage(id, btn) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+      document.getElementById('page-' + id).classList.add('active');
+      if (btn) btn.classList.add('active');
     }
-  }
-  generateHeatmap('heat-qiao', 0.92);
-  generateHeatmap('heat-a', 0.75);
-  generateHeatmap('heat-b', 0.55);
 
-  // Trend chart
-  const weeks = ['W01','W02','W03','W04'];
-  new Chart(document.getElementById('trendChart'), {
-    type: 'line',
-    data: {
-      labels: weeks,
-      datasets: [
-        {
-          label: '桥',
-          data: [85, 92, 100, 100],
-          borderColor: '#c8f060',
-          backgroundColor: 'transparent',
-          tension: 0.3,
-          pointBackgroundColor: '#c8f060',
-          pointRadius: 4,
-          borderDash: []
+    function toggleTheme() {
+      document.body.classList.toggle('light-theme');
+      const theme = document.body.classList.contains('light-theme') ? 'light' : 'dark';
+      localStorage.setItem('ironpact-theme', theme);
+      updateChartTheme();
+    }
+
+    function initTheme() {
+      const saved = localStorage.getItem('ironpact-theme');
+      if (saved === 'light') {
+        document.body.classList.add('light-theme');
+      }
+    }
+
+    function selectType(btn) {
+      document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+    }
+
+    function submitCheckin() {
+      const t = document.getElementById('toast');
+      t.classList.add('show');
+      setTimeout(() => {
+        t.classList.remove('show');
+        window.open(
+          'https://github.com/zhuangyiqiao/W.S.Y/issues/new?template=checkin.yml',
+          '_blank'
+        );
+      }, 450);
+    }
+
+    function generateEmptyHeatmap(containerId) {
+      const grid = document.getElementById(containerId);
+      if (!grid) return;
+      grid.innerHTML = '';
+      for (let i = 0; i < 30; i++) {
+        const cell = document.createElement('div');
+        cell.className = 'heatmap-cell';
+        grid.appendChild(cell);
+      }
+    }
+
+    let trendChartInstance = null;
+
+    function getCssVar(name) {
+      return getComputedStyle(document.body).getPropertyValue(name).trim();
+    }
+
+    function buildChart() {
+      const canvas = document.getElementById('trendChart');
+      if (!canvas) return;
+
+      if (trendChartInstance) {
+        trendChartInstance.destroy();
+      }
+
+      const textColor = getCssVar('--c-muted');
+      const gridColor = getCssVar('--c-border');
+      const line1 = getCssVar('--c-accent');
+      const line2 = getCssVar('--c-accent2');
+      const line3 = getCssVar('--c-danger');
+
+      trendChartInstance = new Chart(canvas, {
+        type: 'line',
+        data: {
+          labels: ['W01', 'W02', 'W03', 'W04'],
+          datasets: [
+            {
+              label: '漾',
+              data: [0, 0, 0, 0],
+              borderColor: line1,
+              backgroundColor: 'transparent',
+              tension: 0.3,
+              pointBackgroundColor: line1,
+              pointRadius: 4,
+              borderDash: []
+            },
+            {
+              label: '闪',
+              data: [0, 0, 0, 0],
+              borderColor: line2,
+              backgroundColor: 'transparent',
+              tension: 0.3,
+              pointBackgroundColor: line2,
+              pointRadius: 4,
+              borderDash: [4, 3]
+            },
+            {
+              label: '源',
+              data: [0, 0, 0, 0],
+              borderColor: line3,
+              backgroundColor: 'transparent',
+              tension: 0.3,
+              pointBackgroundColor: line3,
+              pointRadius: 4,
+              borderDash: [2, 4]
+            }
+          ]
         },
-        {
-          label: 'A',
-          data: [71, 78, 71, 85],
-          borderColor: '#60d0f0',
-          backgroundColor: 'transparent',
-          tension: 0.3,
-          pointBackgroundColor: '#60d0f0',
-          pointRadius: 4,
-          borderDash: [4,3]
-        },
-        {
-          label: 'B',
-          data: [57, 42, 57, 50],
-          borderColor: '#f05060',
-          backgroundColor: 'transparent',
-          tension: 0.3,
-          pointBackgroundColor: '#f05060',
-          pointRadius: 4,
-          borderDash: [2,4]
-        }
-      ]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: { display: false }
-      },
-      scales: {
-        x: {
-          ticks: { color: '#6b6b65', font: { family: 'Space Mono', size: 10 } },
-          grid: { color: '#2a2a2a' }
-        },
-        y: {
-          min: 0, max: 110,
-          ticks: {
-            color: '#6b6b65',
-            font: { family: 'Space Mono', size: 10 },
-            callback: v => v + '%'
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              labels: {
+                color: textColor,
+                font: { family: 'Space Mono', size: 10 }
+              }
+            }
           },
-          grid: { color: '#2a2a2a' }
+          scales: {
+            x: {
+              ticks: {
+                color: textColor,
+                font: { family: 'Space Mono', size: 10 }
+              },
+              grid: { color: gridColor }
+            },
+            y: {
+              min: 0,
+              max: 100,
+              ticks: {
+                color: textColor,
+                font: { family: 'Space Mono', size: 10 },
+                callback: v => v + '%'
+              },
+              grid: { color: gridColor }
+            }
+          }
         }
-      }
+      });
     }
-  });
-</script>
+
+    function updateChartTheme() {
+      buildChart();
+    }
+
+    function initToday() {
+      const today = new Date();
+      const yyyy = today.getFullYear();
+      const mm = String(today.getMonth() + 1).padStart(2, '0');
+      const dd = String(today.getDate()).padStart(2, '0');
+      const input = document.getElementById('date-input');
+      if (input) input.value = `${yyyy}-${mm}-${dd}`;
+    }
+
+    function initBars() {
+      setTimeout(() => {
+        document.getElementById('bar-yang').style.width = '0%';
+        document.getElementById('bar-shan').style.width = '0%';
+        document.getElementById('bar-yuan').style.width = '0%';
+      }, 150);
+    }
+
+    initTheme();
+    initToday();
+    initBars();
+    generateEmptyHeatmap('heat-yang');
+    generateEmptyHeatmap('heat-shan');
+    generateEmptyHeatmap('heat-yuan');
+    buildChart();
+  </script>
+</body>
+</html>
