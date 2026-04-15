@@ -1,1 +1,13 @@
-[]
+[
+  {
+    "user": "漾",
+    "date": "2026-04-15",
+    "type": "饮食稳定",
+    "duration": 1,
+    "steps": null,
+    "evidence": "",
+    "weight": 51,
+    "note": "test",
+    "created_at": "2026-04-15T08:09:14.845Z"
+  }
+]
