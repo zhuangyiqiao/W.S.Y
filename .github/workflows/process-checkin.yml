@@ -1,0 +1,76 @@
+name: Process Check-in
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  contents: write
+  issues: read
+
+jobs:
+  process:
+    if: contains(github.event.issue.labels.*.name, 'checkin')
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Parse issue and update JSON
+        env:
+          ISSUE_BODY: ${{ github.event.issue.body }}
+          ISSUE_TITLE: ${{ github.event.issue.title }}
+          ISSUE_URL: ${{ github.event.issue.html_url }}
+        run: |
+          python <<'PY'
+          import json
+          import os
+          import re
+          from pathlib import Path
+
+          body = os.environ["ISSUE_BODY"]
+          title = os.environ["ISSUE_TITLE"]
+          issue_url = os.environ["ISSUE_URL"]
+
+          def extract(field):
+              pattern = rf"### {re.escape(field)}\s*(.*?)\s*(?=### |\Z)"
+              m = re.search(pattern, body, re.S)
+              if m:
+                  return m.group(1).strip()
+              return ""
+
+          entry = {
+              "title": title,
+              "issue_url": issue_url,
+              "userId": extract("User"),
+              "date": extract("Date"),
+              "type": extract("Check-in Type"),
+              "duration": extract("Duration (minutes)"),
+              "steps": extract("Steps"),
+              "note": extract("Note"),
+              "evidence": extract("Evidence Link")
+          }
+
+          path = Path("data/checkins.json")
+          if path.exists():
+              data = json.loads(path.read_text(encoding="utf-8"))
+          else:
+              data = []
+
+          data.append(entry)
+          path.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+          PY
+
+      - name: Commit changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/checkins.json
+          git commit -m "Add check-in from issue" || echo "No changes to commit"
+          git push
