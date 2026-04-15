@@ -1,0 +1,71 @@
+name: Daily Check-in
+description: Submit your workout or diet check-in
+title: "[Check-in] "
+labels: ["checkin"]
+body:
+  - type: dropdown
+    id: user
+    attributes:
+      label: User
+      description: Who are you?
+      options:
+        - qiao
+        - friend_a
+        - friend_b
+    validations:
+      required: true
+
+  - type: input
+    id: date
+    attributes:
+      label: Date
+      description: Use YYYY-MM-DD
+      placeholder: 2026-04-15
+    validations:
+      required: true
+
+  - type: dropdown
+    id: checkin_type
+    attributes:
+      label: Check-in Type
+      options:
+        - gym
+        - home_workout
+        - diet_control
+        - makeup
+    validations:
+      required: true
+
+  - type: input
+    id: duration
+    attributes:
+      label: Duration (minutes)
+      placeholder: 25
+    validations:
+      required: false
+
+  - type: input
+    id: steps
+    attributes:
+      label: Steps
+      placeholder: 8000
+    validations:
+      required: false
+
+  - type: textarea
+    id: note
+    attributes:
+      label: Note
+      description: Brief summary of what you did
+      placeholder: 25 min cardio + no binge eating
+    validations:
+      required: false
+
+  - type: input
+    id: evidence
+    attributes:
+      label: Evidence Link
+      description: Optional screenshot link
+      placeholder: https://...
+    validations:
+      required: false
