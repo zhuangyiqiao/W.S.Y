@@ -402,6 +402,10 @@
 
     .submit-btn:hover { opacity: 0.85; }
     .submit-btn:active { transform: scale(0.98); }
+    .submit-btn:disabled {
+      cursor: not-allowed;
+      opacity: 0.7;
+    }
 
     .title-badge {
       display: inline-flex;
@@ -534,6 +538,8 @@
       z-index: 999;
       transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
       pointer-events: none;
+      max-width: calc(100vw - 24px);
+      text-align: center;
     }
 
     .toast.show {
@@ -758,47 +764,48 @@
           <div class="form-group full">
             <label class="form-label">// 打卡类型</label>
             <div class="type-grid">
-              <button type="button" class="type-btn selected" onclick="selectType(this)">健身房</button>
-              <button type="button" class="type-btn" onclick="selectType(this)">居家运动</button>
-              <button type="button" class="type-btn" onclick="selectType(this)">饮食稳定</button>
-              <button type="button" class="type-btn" onclick="selectType(this)">补卡</button>
+              <button type="button" class="type-btn selected" data-type="健身房" onclick="selectType(this)">健身房</button>
+              <button type="button" class="type-btn" data-type="居家运动" onclick="selectType(this)">居家运动</button>
+              <button type="button" class="type-btn" data-type="饮食稳定" onclick="selectType(this)">饮食稳定</button>
+              <button type="button" class="type-btn" data-type="补卡" onclick="selectType(this)">补卡</button>
+              <button type="button" class="type-btn" data-type="经期无暴食" onclick="selectType(this)">经期无暴食</button>
             </div>
           </div>
 
           <div class="form-group">
             <label class="form-label">// 时长 (分钟)</label>
-            <input class="form-input" type="number" placeholder="20" min="0" max="300">
+            <input class="form-input" type="number" id="duration-input" placeholder="20" min="0" max="300">
           </div>
 
           <div class="form-group">
             <label class="form-label">// 步数 (可选)</label>
-            <input class="form-input" type="number" placeholder="8000">
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">// 体重 kg (可选)</label>
-            <input class="form-input" type="number" placeholder="50.0" step="0.1">
+            <input class="form-input" type="number" id="steps-input" placeholder="8000">
           </div>
 
           <div class="form-group">
             <label class="form-label">// 证据链接 (可选)</label>
-            <input class="form-input" type="text" placeholder="https://...">
+            <input class="form-input" type="text" id="evidence-input" placeholder="https://...">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">// 体重 kg (可选)</label>
+            <input class="form-input" type="number" id="weight-input" placeholder="50.0" step="0.1">
           </div>
 
           <div class="form-group full">
             <label class="form-label">// 备注</label>
-            <input class="form-input" type="text" placeholder="例如：快走20分钟 / 经期无暴食 / 补卡说明">
+            <input class="form-input" type="text" id="note-input" placeholder="例如：快走20分钟 / 经期无暴食 / 补卡说明">
           </div>
         </div>
 
-        <button class="submit-btn" onclick="submitCheckin()">[ 提交打卡 → GitHub Issue ]</button>
+        <button class="submit-btn" id="submit-btn" onclick="submitCheckin()">[ 提交打卡 ]</button>
       </div>
 
       <div class="rule-block">
         <div class="rule-head">// 当前执行逻辑</div>
-        <div class="rule-item"><span class="rule-dot">→</span><span>点击提交后，会跳转到 GitHub Issue Form 页面</span></div>
-        <div class="rule-item"><span class="rule-dot">→</span><span>提交 Issue 后，GitHub Actions 负责解析和更新数据</span></div>
-        <div class="rule-item"><span class="rule-dot">→</span><span>页面后续会读取 <code>data/checkins.json</code> 自动刷新状态</span></div>
+        <div class="rule-item"><span class="rule-dot">→</span><span>朋友只需要在网页填写表单，不需要 GitHub 账号</span></div>
+        <div class="rule-item"><span class="rule-dot">→</span><span>表单会提交到后端接口，再由后端写入 GitHub 数据</span></div>
+        <div class="rule-item"><span class="rule-dot">→</span><span>后续页面会读取 <code>data/checkins.json</code> 自动刷新状态</span></div>
       </div>
     </div>
 
@@ -951,16 +958,18 @@
       <div class="rule-block">
         <div class="rule-head">// 技术说明</div>
         <div class="rule-item"><span class="rule-dot">→</span><span>所有打卡数据会保存在 GitHub 仓库中</span></div>
-        <div class="rule-item"><span class="rule-dot">→</span><span>后续由 GitHub Actions 自动解析与更新</span></div>
+        <div class="rule-item"><span class="rule-dot">→</span><span>由后端接口写入 GitHub 数据文件</span></div>
         <div class="rule-item"><span class="rule-dot">→</span><span>争议以仓库记录为准</span></div>
       </div>
     </div>
   </div>
 
-  <div class="toast" id="toast">[ 即将跳转到打卡表单 ]</div>
+  <div class="toast" id="toast">[ 提示 ]</div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
   <script>
+    const API_BASE_URL = 'https://YOUR-WORKER-URL.workers.dev';
+
     function showPage(id, btn) {
       document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
       document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
@@ -987,16 +996,108 @@
       btn.classList.add('selected');
     }
 
-    function submitCheckin() {
+    function getSelectedType() {
+      const selected = document.querySelector('.type-btn.selected');
+      return selected ? selected.dataset.type : '';
+    }
+
+    function showToast(message, duration = 2500) {
       const t = document.getElementById('toast');
+      t.textContent = message;
       t.classList.add('show');
-      setTimeout(() => {
-        t.classList.remove('show');
-        window.open(
-          'https://github.com/zhuangyiqiao/W.S.Y/issues/new?template=checkin.yml',
-          '_blank'
-        );
-      }, 450);
+      setTimeout(() => t.classList.remove('show'), duration);
+    }
+
+    function setSubmitLoading(isLoading) {
+      const btn = document.getElementById('submit-btn');
+      if (!btn) return;
+      btn.disabled = isLoading;
+      btn.style.opacity = isLoading ? '0.7' : '1';
+      btn.textContent = isLoading ? '[ 提交中... ]' : '[ 提交打卡 ]';
+    }
+
+    function validatePayload(payload) {
+      if (!payload.user) return '请选择用户';
+      if (!payload.date) return '请选择日期';
+      if (!payload.type) return '请选择打卡类型';
+
+      if (
+        payload.type !== '饮食稳定' &&
+        payload.type !== '经期无暴食' &&
+        payload.type !== '补卡'
+      ) {
+        if (payload.duration === null || Number.isNaN(payload.duration)) {
+          return '请输入运动时长';
+        }
+        if (payload.duration < 0) {
+          return '运动时长不能小于 0';
+        }
+      }
+
+      return '';
+    }
+
+    async function submitCheckin() {
+      const payload = {
+        user: document.getElementById('user-select')?.value || '',
+        date: document.getElementById('date-input')?.value || '',
+        type: getSelectedType(),
+        duration: document.getElementById('duration-input')?.value
+          ? Number(document.getElementById('duration-input').value)
+          : null,
+        steps: document.getElementById('steps-input')?.value
+          ? Number(document.getElementById('steps-input').value)
+          : null,
+        evidence: document.getElementById('evidence-input')?.value?.trim() || '',
+        weight: document.getElementById('weight-input')?.value
+          ? Number(document.getElementById('weight-input').value)
+          : null,
+        note: document.getElementById('note-input')?.value?.trim() || ''
+      };
+
+      const error = validatePayload(payload);
+      if (error) {
+        showToast(`[ ${error} ]`, 2200);
+        return;
+      }
+
+      try {
+        setSubmitLoading(true);
+
+        const res = await fetch(`${API_BASE_URL}/checkin`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await res.json().catch(() => ({}));
+
+        if (!res.ok) {
+          throw new Error(data.error || '提交失败');
+        }
+
+        showToast('[ 打卡提交成功 ]');
+
+        document.getElementById('duration-input').value = '';
+        document.getElementById('steps-input').value = '';
+        document.getElementById('evidence-input').value = '';
+        document.getElementById('weight-input').value = '';
+        document.getElementById('note-input').value = '';
+
+        const firstTypeBtn = document.querySelector('.type-btn[data-type="健身房"]');
+        if (firstTypeBtn) {
+          document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('selected'));
+          firstTypeBtn.classList.add('selected');
+        }
+
+      } catch (err) {
+        console.error(err);
+        showToast(`[ ${err.message || '提交失败，请稍后再试'} ]`, 3000);
+      } finally {
+        setSubmitLoading(false);
+      }
     }
 
     function generateEmptyHeatmap(containerId) {
