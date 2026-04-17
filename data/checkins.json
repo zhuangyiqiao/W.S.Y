@@ -9,5 +9,16 @@
     "weight": 51,
     "note": "test",
     "created_at": "2026-04-15T08:09:14.845Z"
+  },
+  {
+    "user": "漾",
+    "date": "2026-04-17",
+    "type": "经期无暴食",
+    "duration": null,
+    "steps": null,
+    "evidence": "",
+    "weight": 52,
+    "note": "",
+    "created_at": "2026-04-17T06:28:42.667Z"
   }
 ]
