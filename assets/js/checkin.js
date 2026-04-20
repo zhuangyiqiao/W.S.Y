@@ -1,10 +1,10 @@
 import { MAX_EVIDENCE_FILE_SIZE } from './config.js';
 import { formatFileSize, readFileAsDataURL } from './utils.js';
-import { showToast, setSubmitLoading } from './render.js';
+import { setSubmitLoading, showToast } from './render.js';
 import { submitCheckinRequest } from './api.js';
 
 export function selectType(btn) {
-  document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('selected'));
+  document.querySelectorAll('.type-btn').forEach(button => button.classList.remove('selected'));
   btn.classList.add('selected');
 }
 
@@ -39,12 +39,14 @@ export function handleEvidenceFileChange() {
   const meta = document.getElementById('evidence-file-meta');
   const file = input?.files?.[0];
 
+  if (!meta) return;
+
   if (!file) {
     meta.textContent = '未选择附件';
     return;
   }
 
-  meta.textContent = `已选择：${file.name}（${formatFileSize(file.size)}）`;
+  meta.textContent = `已选择：${file.name} · ${formatFileSize(file.size)}`;
 }
 
 export async function submitCheckin() {
@@ -83,7 +85,6 @@ export async function submitCheckin() {
       }
 
       const dataUrl = await readFileAsDataURL(selectedFile);
-
       payload.evidence = {
         mode: 'embedded_file',
         filename: selectedFile.name,
@@ -105,6 +106,7 @@ export async function submitCheckin() {
     if (fileInput) {
       fileInput.value = '';
     }
+
     const meta = document.getElementById('evidence-file-meta');
     if (meta) {
       meta.textContent = '未选择附件';
@@ -112,12 +114,11 @@ export async function submitCheckin() {
 
     const firstTypeBtn = document.querySelector('.type-btn[data-type="健身房"]');
     if (firstTypeBtn) {
-      document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('selected'));
+      document.querySelectorAll('.type-btn').forEach(button => button.classList.remove('selected'));
       firstTypeBtn.classList.add('selected');
     }
 
     window.dispatchEvent(new CustomEvent('checkin:submitted'));
-
   } catch (err) {
     console.error(err);
     showToast(`[ ${err.message || '提交失败，请稍后再试'} ]`, 3000);

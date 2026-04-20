@@ -242,6 +242,59 @@
 
     <div class="page" id="page-history">
       <p class="section-label" style="margin-top:4px">三人历史记录</p>
+      <div class="history-editor hidden" id="history-editor">
+        <div class="history-editor-head">
+          <div>
+            <div class="title-name">编辑记录</div>
+            <div class="title-sub" id="history-editor-subtitle">修改后会立即同步到首页、热力图和趋势图</div>
+          </div>
+          <button class="history-ghost-btn" type="button" onclick="cancelHistoryEdit()">取消</button>
+        </div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">// 用户</label>
+            <select class="form-select" id="history-user-select">
+              <option>漾</option>
+              <option>闪</option>
+              <option>源</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">// 日期</label>
+            <input class="form-input" type="date" id="history-date-input">
+          </div>
+          <div class="form-group full">
+            <label class="form-label">// 打卡类型</label>
+            <select class="form-select" id="history-type-select">
+              <option>健身房</option>
+              <option>居家运动</option>
+              <option>饮食稳定</option>
+              <option>补卡</option>
+              <option>经期无暴食</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">// 时长 (分钟)</label>
+            <input class="form-input" type="number" id="history-duration-input" min="0" max="300">
+          </div>
+          <div class="form-group">
+            <label class="form-label">// 步数</label>
+            <input class="form-input" type="number" id="history-steps-input" min="0">
+          </div>
+          <div class="form-group">
+            <label class="form-label">// 体重 kg</label>
+            <input class="form-input" type="number" id="history-weight-input" step="0.1">
+          </div>
+          <div class="form-group full">
+            <label class="form-label">// 备注</label>
+            <input class="form-input" type="text" id="history-note-input" placeholder="补充这次打卡的说明">
+          </div>
+        </div>
+        <div class="history-editor-actions">
+          <button class="submit-btn history-save-btn" type="button" onclick="saveHistoryEdit()">保存修改</button>
+          <div class="history-editor-tip">当前编辑会保存在本浏览器，并立即重新计算所有统计视图。</div>
+        </div>
+      </div>
       <div class="history-grid" id="history-grid"></div>
     </div>
 

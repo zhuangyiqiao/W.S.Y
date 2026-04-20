@@ -1,12 +1,11 @@
 import { getCssVar } from './utils.js';
-import { formatMetaDate, formatMoney, getMemberById } from './data.js';
+import { formatMetaDate, formatMoney } from './data.js';
 import { getTrendChartInstance, setTrendChartInstance } from './state.js';
-import { MEMBERS } from './config.js';
 
 let latestViewModel = null;
 
 function escapeHtml(value) {
-  return String(value).replace(/[&<>"']/g, char => ({
+  return String(value ?? '').replace(/[&<>"']/g, char => ({
     '&': '&amp;',
     '<': '&lt;',
     '>': '&gt;',
@@ -17,7 +16,9 @@ function escapeHtml(value) {
 
 function setText(id, value) {
   const element = document.getElementById(id);
-  if (element) element.textContent = value;
+  if (element) {
+    element.textContent = value;
+  }
 }
 
 function renderEmptyRow(columns, message) {
@@ -34,9 +35,18 @@ function renderEmptyRow(columns, message) {
   return `<div class="score-row">${cells.join('')}</div>`;
 }
 
-function renderRankingRows(memberStats) {
-  return memberStats.map((member, index) => {
+function getHeatmapColor(member, level) {
+  if (!level) return '';
+  if (level === 1) return 'rgba(255, 255, 255, 0.96)';
+  if (level === 2) return `rgba(${member.heatColorRgb}, 0.5)`;
+  if (level === 3) return `rgba(${member.heatColorRgb}, 0.78)`;
+  return `rgba(${member.heatColorRgb}, 1)`;
+}
+
+function renderRankingRows(ranking) {
+  return ranking.map((member, index) => {
     const rankClass = `rank-${Math.min(index + 1, 3)}`;
+
     return `
       <div class="score-row">
         <span class="rank-num ${rankClass}">${String(index + 1).padStart(2, '0')}</span>
@@ -63,21 +73,29 @@ function renderPoolRows(poolEvents) {
   `).join('');
 }
 
-function renderHistoryCards(memberStats) {
-  return memberStats.map(member => `
+function renderHistoryCards(members) {
+  return members.map(member => `
     <section class="history-card">
       <div class="history-head">
         <div>
           <div class="title-name">${escapeHtml(member.name)}</div>
           <div class="title-sub">共 ${member.totalCheckins} 次打卡 · 最近 ${escapeHtml(formatMetaDate(member.lastDate))}</div>
         </div>
-        <div class="title-badge">${member.currentStreak} 天连续</div>
+        <div class="title-badge" style="border-color:${member.chartColor};color:${member.chartColor}">${member.currentStreak} 天连续</div>
       </div>
       <div class="history-list">
         ${member.history.length ? member.history.map(item => `
           <article class="history-item">
-            <div class="history-date">${escapeHtml(item.date)}</div>
-            <div class="history-type">${escapeHtml(item.type)}</div>
+            <div class="history-item-top">
+              <div>
+                <div class="history-date">${escapeHtml(item.date)}</div>
+                <div class="history-type">${escapeHtml(item.type)}</div>
+              </div>
+              <div class="history-item-actions">
+                <button class="history-inline-btn" type="button" onclick="startHistoryEdit('${escapeHtml(item.id)}')">编辑</button>
+                <button class="history-inline-btn danger" type="button" onclick="deleteHistoryRecord('${escapeHtml(item.id)}')">删除</button>
+              </div>
+            </div>
             ${item.details ? `<div class="history-meta">${escapeHtml(item.details)}</div>` : ''}
             ${item.note ? `<div class="history-note">${escapeHtml(item.note)}</div>` : ''}
           </article>
@@ -87,39 +105,39 @@ function renderHistoryCards(memberStats) {
   `).join('');
 }
 
-function renderLeaderboardTitles(memberStats) {
+function renderLeaderboardTitles(ranking) {
   const container = document.getElementById('leaderboard-title-list');
   if (!container) return;
 
-  container.innerHTML = memberStats.map(member => `
+  container.innerHTML = ranking.map(member => `
     <div class="title-row">
       <div>
         <div class="title-name">${escapeHtml(member.name)}</div>
         <div class="title-sub">当前积分 ${member.weekScore} · 当前连续 ${member.currentStreak} 天 · 最长连续 ${member.longestStreak} 天</div>
       </div>
       <div style="text-align:right">
-        <div class="title-badge">${escapeHtml(member.badge)}</div>
+        <div class="title-badge" style="border-color:${member.chartColor};color:${member.chartColor}">${escapeHtml(member.badge)}</div>
       </div>
     </div>
   `).join('');
 }
 
 function renderDashboard(viewModel) {
-  const { memberStats, totals } = viewModel;
-  const leader = memberStats[0];
+  const leader = viewModel.ranking[0];
 
-  MEMBERS.forEach(memberConfig => {
-    const member = getMemberById(memberStats, memberConfig.id);
-    const bar = document.getElementById(memberConfig.barId);
-    const status = document.getElementById(memberConfig.statusId);
+  viewModel.members.forEach(member => {
+    const bar = document.getElementById(member.barId);
+    const status = document.getElementById(member.statusId);
 
     if (bar) {
-      bar.style.width = `${member?.weekRate || 0}%`;
+      bar.style.width = `${member.weekRate || 0}%`;
+      bar.style.background = member.chartColor;
     }
 
     if (status) {
-      const done = Boolean(member?.todayDone);
-      status.textContent = done ? 'DONE' : `W${member?.weekRate || 0}%`;
+      const done = Boolean(member.todayDone);
+      status.textContent = done ? 'DONE' : `W${member.weekRate || 0}%`;
+      status.style.color = done ? member.chartColor : getCssVar('--c-muted');
       status.classList.toggle('done', done);
       status.classList.toggle('miss', !done);
     }
@@ -127,29 +145,29 @@ function renderDashboard(viewModel) {
 
   setText('dashboard-week-leader', leader ? leader.name : '--');
   setText('dashboard-week-leader-meta', leader ? `${leader.weekScore} pts · ${leader.badge}` : '0 pts');
-  setText('dashboard-pool-balance', formatMoney(totals.poolBalance));
+  setText('dashboard-pool-balance', formatMoney(viewModel.totals.poolBalance));
   setText('dashboard-pool-meta', `${viewModel.poolEvents.length} 次未打卡累计`);
-  setText('dashboard-week-rate', `${totals.weekCompletionRate}%`);
+  setText('dashboard-week-rate', `${viewModel.totals.weekCompletionRate}%`);
   setText('dashboard-week-rate-meta', `${viewModel.todayKey} 更新`);
-  setText('dashboard-longest-streak', `${totals.longestStreak}天`);
+  setText('dashboard-longest-streak', `${viewModel.totals.longestStreak}天`);
   setText('dashboard-longest-streak-meta', leader ? `${leader.name} 当前领跑` : '待开始');
 
   const rankingTable = document.getElementById('dashboard-ranking-table');
-  if (rankingTable) {
-    rankingTable.innerHTML = `
-      <div class="score-row header">
-        <span style="font-family:var(--c-mono);font-size:10px;color:var(--c-muted)">#</span>
-        <span style="font-family:var(--c-mono);font-size:10px;color:var(--c-muted)">成员</span>
-        <span style="font-family:var(--c-mono);font-size:10px;color:var(--c-muted);text-align:right">积分</span>
-        <span style="font-family:var(--c-mono);font-size:10px;color:var(--c-muted);text-align:right">状态</span>
-      </div>
-      ${memberStats.length ? renderRankingRows(memberStats) : renderEmptyRow(4, '还没有打卡数据')}
-    `;
-  }
+  if (!rankingTable) return;
+
+  rankingTable.innerHTML = `
+    <div class="score-row header">
+      <span style="font-family:var(--c-mono);font-size:10px;color:var(--c-muted)">#</span>
+      <span style="font-family:var(--c-mono);font-size:10px;color:var(--c-muted)">成员</span>
+      <span style="font-family:var(--c-mono);font-size:10px;color:var(--c-muted);text-align:right">积分</span>
+      <span style="font-family:var(--c-mono);font-size:10px;color:var(--c-muted);text-align:right">状态</span>
+    </div>
+    ${viewModel.ranking.length ? renderRankingRows(viewModel.ranking) : renderEmptyRow(4, '还没有打卡数据')}
+  `;
 }
 
 function renderLeaderboard(viewModel) {
-  renderLeaderboardTitles(viewModel.memberStats);
+  renderLeaderboardTitles(viewModel.ranking);
 
   const poolTable = document.getElementById('leaderboard-pool-table');
   if (!poolTable) return;
@@ -165,14 +183,15 @@ function renderLeaderboard(viewModel) {
   `;
 }
 
-function renderHeatmaps(memberStats) {
-  memberStats.forEach(member => {
+function renderHeatmaps(members) {
+  members.forEach(member => {
     const grid = document.getElementById(member.heatmapId);
     if (!grid) return;
 
     grid.innerHTML = member.heatmap.map(cell => `
       <div
         class="heatmap-cell${cell.level ? ` d${cell.level}` : ''}"
+        style="${cell.level ? `background:${getHeatmapColor(member, cell.level)};border-color:${cell.level === 1 ? member.chartColor : 'transparent'};` : ''}"
         title="${escapeHtml(`${member.name} ${cell.date} · ${cell.count} 次`)}"
       ></div>
     `).join('');
@@ -180,7 +199,7 @@ function renderHeatmaps(memberStats) {
 }
 
 function renderAnalytics(viewModel) {
-  renderHeatmaps(viewModel.memberStats);
+  renderHeatmaps(viewModel.members);
   buildChart(viewModel);
 
   setText('analytics-month-rate', `${viewModel.totals.monthCompletionRate}%`);
@@ -192,7 +211,7 @@ function renderAnalytics(viewModel) {
 function renderHistory(viewModel) {
   const grid = document.getElementById('history-grid');
   if (!grid) return;
-  grid.innerHTML = renderHistoryCards(viewModel.memberStats);
+  grid.innerHTML = renderHistoryCards(viewModel.members);
 }
 
 export function renderApp(viewModel) {
@@ -212,6 +231,8 @@ export function showPage(id, btn) {
 
 export function showToast(message, duration = 2500) {
   const toast = document.getElementById('toast');
+  if (!toast) return;
+
   toast.textContent = message;
   toast.classList.add('show');
   setTimeout(() => toast.classList.remove('show'), duration);
@@ -220,13 +241,45 @@ export function showToast(message, duration = 2500) {
 export function setSubmitLoading(isLoading) {
   const btn = document.getElementById('submit-btn');
   if (!btn) return;
+
   btn.disabled = isLoading;
   btn.style.opacity = isLoading ? '0.7' : '1';
   btn.textContent = isLoading ? '[ 提交中... ]' : '[ 提交打卡 ]';
 }
 
+export function toggleHistoryEditor(isVisible) {
+  const editor = document.getElementById('history-editor');
+  if (!editor) return;
+  editor.classList.toggle('hidden', !isVisible);
+}
+
+export function fillHistoryEditor(record) {
+  setText('history-editor-subtitle', `${record.user} · ${record.date} · ${record.type}`);
+  document.getElementById('history-user-select').value = record.user;
+  document.getElementById('history-date-input').value = record.date;
+  document.getElementById('history-type-select').value = record.type;
+  document.getElementById('history-duration-input').value = record.duration ?? '';
+  document.getElementById('history-steps-input').value = record.steps ?? '';
+  document.getElementById('history-weight-input').value = record.weight ?? '';
+  document.getElementById('history-note-input').value = record.note ?? '';
+  toggleHistoryEditor(true);
+}
+
+export function resetHistoryEditor() {
+  setText('history-editor-subtitle', '修改后会立即同步到首页、热力图和趋势图');
+  document.getElementById('history-user-select').value = '漾';
+  document.getElementById('history-date-input').value = '';
+  document.getElementById('history-type-select').value = '健身房';
+  document.getElementById('history-duration-input').value = '';
+  document.getElementById('history-steps-input').value = '';
+  document.getElementById('history-weight-input').value = '';
+  document.getElementById('history-note-input').value = '';
+  toggleHistoryEditor(false);
+}
+
 export function buildChart(viewModel = latestViewModel) {
   latestViewModel = viewModel || latestViewModel;
+
   const canvas = document.getElementById('trendChart');
   if (!canvas || !latestViewModel) return;
 
@@ -237,21 +290,18 @@ export function buildChart(viewModel = latestViewModel) {
 
   const textColor = getCssVar('--c-muted');
   const gridColor = getCssVar('--c-border');
-  const lineColors = [
-    getCssVar('--c-accent'),
-    getCssVar('--c-accent2'),
-    getCssVar('--c-danger')
-  ];
 
-  const datasets = latestViewModel.memberStats.map((member, index) => ({
+  const datasets = latestViewModel.members.map(member => ({
     label: member.name,
     data: member.trend.map(item => item.value),
-    borderColor: lineColors[index] || lineColors[lineColors.length - 1],
+    borderColor: member.chartColor,
     backgroundColor: 'transparent',
     tension: 0.28,
-    pointBackgroundColor: lineColors[index] || lineColors[lineColors.length - 1],
+    pointBackgroundColor: member.chartColor,
+    pointBorderColor: member.chartColor,
     pointRadius: 4,
-    borderDash: index === 1 ? [4, 3] : index === 2 ? [2, 4] : []
+    pointHoverRadius: 5,
+    borderWidth: 2.5
   }));
 
   const nextChart = new Chart(canvas, {
@@ -267,7 +317,9 @@ export function buildChart(viewModel = latestViewModel) {
         legend: {
           labels: {
             color: textColor,
-            font: { family: 'Space Mono', size: 10 }
+            font: { family: 'Space Mono', size: 10 },
+            usePointStyle: true,
+            pointStyle: 'circle'
           }
         }
       },
