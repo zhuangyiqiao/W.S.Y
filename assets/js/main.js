@@ -1,5 +1,6 @@
-import { showPage, buildChart, updateChartTheme, generateEmptyHeatmap, initBars } from './render.js';
+import { renderApp, renderLoadError, showPage, updateChartTheme, showToast } from './render.js';
 import { selectType, handleEvidenceFileChange, submitCheckin } from './checkin.js';
+import { loadCheckinsData } from './data.js';
 
 function toggleTheme() {
   document.body.classList.toggle('light-theme');
@@ -30,10 +31,27 @@ window.selectType = selectType;
 window.handleEvidenceFileChange = handleEvidenceFileChange;
 window.submitCheckin = submitCheckin;
 
-initTheme();
-initToday();
-initBars();
-generateEmptyHeatmap('heat-yang');
-generateEmptyHeatmap('heat-shan');
-generateEmptyHeatmap('heat-yuan');
-buildChart();
+async function refreshAppData() {
+  try {
+    const viewModel = await loadCheckinsData();
+    renderApp(viewModel);
+  } catch (error) {
+    console.error(error);
+    renderLoadError(error.message || '初始化失败');
+    showToast('[ 数据加载失败 ]', 3000);
+  }
+}
+
+async function initApp() {
+  initTheme();
+  initToday();
+  await refreshAppData();
+}
+
+window.addEventListener('checkin:submitted', () => {
+  window.setTimeout(() => {
+    refreshAppData();
+  }, 600);
+});
+
+initApp();

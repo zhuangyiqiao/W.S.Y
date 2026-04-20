@@ -14,6 +14,7 @@
       <button class="nav-tab" onclick="showPage('checkin', this)">打卡</button>
       <button class="nav-tab" onclick="showPage('leaderboard', this)">排行榜</button>
       <button class="nav-tab" onclick="showPage('analytics', this)">趋势</button>
+      <button class="nav-tab" onclick="showPage('history', this)">历史</button>
       <button class="nav-tab" onclick="showPage('rules', this)">规则</button>
       <button class="nav-tab" onclick="toggleTheme()">黑/白</button>
     </nav>
@@ -29,7 +30,7 @@
           <div class="survival-bar-wrap">
             <div class="survival-bar-fill" id="bar-yang" style="width:0%;background:var(--c-accent)"></div>
           </div>
-          <span class="survival-status miss">--</span>
+          <span class="survival-status miss" id="status-yang">--</span>
         </div>
 
         <div class="survival-row">
@@ -37,7 +38,7 @@
           <div class="survival-bar-wrap">
             <div class="survival-bar-fill" id="bar-shan" style="width:0%;background:var(--c-accent2)"></div>
           </div>
-          <span class="survival-status miss">--</span>
+          <span class="survival-status miss" id="status-shan">--</span>
         </div>
 
         <div class="survival-row">
@@ -45,64 +46,43 @@
           <div class="survival-bar-wrap">
             <div class="survival-bar-fill" id="bar-yuan" style="width:0%;background:var(--c-warn)"></div>
           </div>
-          <span class="survival-status miss">--</span>
+          <span class="survival-status miss" id="status-yuan">--</span>
         </div>
       </div>
 
       <div class="stat-grid">
         <div class="stat-card">
           <div class="stat-label">本周积分榜首</div>
-          <div class="stat-val accent">--</div>
-          <div style="font-size:12px;color:var(--c-muted);margin-top:4px;font-family:var(--c-mono)">0 pts</div>
+          <div class="stat-val accent" id="dashboard-week-leader">--</div>
+          <div style="font-size:12px;color:var(--c-muted);margin-top:4px;font-family:var(--c-mono)" id="dashboard-week-leader-meta">0 pts</div>
         </div>
 
         <div class="stat-card">
           <div class="stat-label">公共池余额</div>
-          <div class="stat-val warn">¥ 0</div>
-          <div style="font-size:12px;color:var(--c-muted);margin-top:4px;font-family:var(--c-mono)">当前累计</div>
+          <div class="stat-val warn" id="dashboard-pool-balance">¥ 0</div>
+          <div style="font-size:12px;color:var(--c-muted);margin-top:4px;font-family:var(--c-mono)" id="dashboard-pool-meta">当前累计</div>
         </div>
 
         <div class="stat-card">
           <div class="stat-label">本周完成率</div>
-          <div class="stat-val accent2">0%</div>
-          <div style="font-size:12px;color:var(--c-muted);margin-top:4px;font-family:var(--c-mono)">初始化状态</div>
+          <div class="stat-val accent2" id="dashboard-week-rate">0%</div>
+          <div style="font-size:12px;color:var(--c-muted);margin-top:4px;font-family:var(--c-mono)" id="dashboard-week-rate-meta">初始化状态</div>
         </div>
 
         <div class="stat-card">
           <div class="stat-label">当前最长连续天数</div>
-          <div class="stat-val" style="color:var(--c-purple)">0天</div>
-          <div style="font-size:12px;color:var(--c-muted);margin-top:4px;font-family:var(--c-mono)">待开始</div>
+          <div class="stat-val" style="color:var(--c-purple)" id="dashboard-longest-streak">0天</div>
+          <div style="font-size:12px;color:var(--c-muted);margin-top:4px;font-family:var(--c-mono)" id="dashboard-longest-streak-meta">待开始</div>
         </div>
       </div>
 
       <p class="section-label">本周积分排行</p>
-      <div class="score-table">
+      <div class="score-table" id="dashboard-ranking-table">
         <div class="score-row header">
           <span style="font-family:var(--c-mono);font-size:10px;color:var(--c-muted)">#</span>
           <span style="font-family:var(--c-mono);font-size:10px;color:var(--c-muted)">成员</span>
           <span style="font-family:var(--c-mono);font-size:10px;color:var(--c-muted);text-align:right">积分</span>
           <span style="font-family:var(--c-mono);font-size:10px;color:var(--c-muted);text-align:right">状态</span>
-        </div>
-
-        <div class="score-row">
-          <span class="rank-num rank-1">01</span>
-          <span class="score-name">漾 <span class="badge badge-gold">待开始</span></span>
-          <span class="score-pts accent">0</span>
-          <span class="score-streak">--</span>
-        </div>
-
-        <div class="score-row">
-          <span class="rank-num rank-2">02</span>
-          <span class="score-name">闪 <span class="badge badge-silver">待开始</span></span>
-          <span class="score-pts accent2">0</span>
-          <span class="score-streak">--</span>
-        </div>
-
-        <div class="score-row">
-          <span class="rank-num rank-3">03</span>
-          <span class="score-name">源 <span class="badge badge-bronze">待开始</span></span>
-          <span class="score-pts" style="color:var(--c-warn)">0</span>
-          <span class="score-streak">--</span>
         </div>
       </div>
     </div>
@@ -184,56 +164,21 @@
     <div class="page" id="page-leaderboard">
       <p class="section-label" style="margin-top:4px">称号 & 历史</p>
 
-      <div class="title-row">
-        <div>
-          <div class="title-name">漾</div>
-          <div class="title-sub">当前积分 0 · 当前连续 0 天</div>
-        </div>
-        <div style="text-align:right">
-          <div class="title-badge">待开始</div>
-        </div>
-      </div>
-
-      <div class="title-row">
-        <div>
-          <div class="title-name">闪</div>
-          <div class="title-sub">当前积分 0 · 当前连续 0 天</div>
-        </div>
-        <div style="text-align:right">
-          <div class="title-badge">待开始</div>
-        </div>
-      </div>
-
-      <div class="title-row">
-        <div>
-          <div class="title-name">源</div>
-          <div class="title-sub">当前积分 0 · 当前连续 0 天</div>
-        </div>
-        <div style="text-align:right">
-          <div class="title-badge">待开始</div>
-        </div>
-      </div>
+      <div id="leaderboard-title-list"></div>
 
       <p class="section-label" style="margin-top:20px">公共池记录</p>
-      <div class="score-table">
+      <div class="score-table" id="leaderboard-pool-table">
         <div class="score-row header">
           <span style="font-family:var(--c-mono);font-size:10px;color:var(--c-muted)">#</span>
           <span style="font-family:var(--c-mono);font-size:10px;color:var(--c-muted)">事件</span>
           <span style="font-family:var(--c-mono);font-size:10px;color:var(--c-muted);text-align:right">金额</span>
           <span style="font-family:var(--c-mono);font-size:10px;color:var(--c-muted);text-align:right">日期</span>
         </div>
-
-        <div class="score-row">
-          <span style="font-family:var(--c-mono);color:var(--c-muted)">--</span>
-          <span class="score-name" style="color:var(--c-muted)">暂无记录</span>
-          <span class="score-pts" style="color:var(--c-muted)">--</span>
-          <span class="score-streak">--</span>
-        </div>
       </div>
     </div>
 
     <div class="page" id="page-analytics">
-      <p class="section-label" style="margin-top:4px">趋势分析 · 初始化状态</p>
+      <p class="section-label" style="margin-top:4px">趋势分析 · 最近 30 天</p>
 
       <div class="chart-wrap">
         <div class="chart-title">// 打卡热力图</div>
@@ -275,24 +220,29 @@
       <div class="stat-grid">
         <div class="stat-card">
           <div class="stat-label">本月整体完成率</div>
-          <div class="stat-val accent">0%</div>
+          <div class="stat-val accent" id="analytics-month-rate">0%</div>
         </div>
 
         <div class="stat-card">
           <div class="stat-label">公共池累计</div>
-          <div class="stat-val warn">¥ 0</div>
+          <div class="stat-val warn" id="analytics-pool-balance">¥ 0</div>
         </div>
 
         <div class="stat-card">
           <div class="stat-label">总打卡次数</div>
-          <div class="stat-val accent2">0</div>
+          <div class="stat-val accent2" id="analytics-total-checkins">0</div>
         </div>
 
         <div class="stat-card">
           <div class="stat-label">全员完成天数</div>
-          <div class="stat-val" style="color:var(--c-purple)">0天</div>
+          <div class="stat-val" style="color:var(--c-purple)" id="analytics-all-done-days">0天</div>
         </div>
       </div>
+    </div>
+
+    <div class="page" id="page-history">
+      <p class="section-label" style="margin-top:4px">三人历史记录</p>
+      <div class="history-grid" id="history-grid"></div>
     </div>
 
     <div class="page" id="page-rules">

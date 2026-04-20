@@ -116,6 +116,8 @@ export async function submitCheckin() {
       firstTypeBtn.classList.add('selected');
     }
 
+    window.dispatchEvent(new CustomEvent('checkin:submitted'));
+
   } catch (err) {
     console.error(err);
     showToast(`[ ${err.message || '提交失败，请稍后再试'} ]`, 3000);

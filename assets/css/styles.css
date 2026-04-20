@@ -434,6 +434,83 @@ body {
 .title-name { font-size: 15px; font-weight: 500; }
 .title-sub { font-size: 12px; color: var(--c-muted); margin-top: 2px; }
 
+.history-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.history-card {
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: 8px;
+  padding: 16px;
+  min-height: 280px;
+}
+
+.history-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--c-border);
+  margin-bottom: 12px;
+}
+
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 560px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.history-item {
+  background: var(--c-surface2);
+  border: 1px solid var(--c-border);
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.history-date,
+.history-type,
+.history-meta {
+  font-family: var(--c-mono);
+}
+
+.history-date {
+  font-size: 11px;
+  color: var(--c-muted);
+  margin-bottom: 6px;
+}
+
+.history-type {
+  font-size: 13px;
+  color: var(--c-text);
+}
+
+.history-meta {
+  font-size: 11px;
+  color: var(--c-muted);
+  margin-top: 6px;
+}
+
+.history-note {
+  font-size: 12px;
+  color: var(--c-text);
+  margin-top: 8px;
+  line-height: 1.6;
+  word-break: break-word;
+}
+
+.history-empty {
+  color: var(--c-muted);
+  font-size: 13px;
+  padding: 16px 0;
+}
+
 .heatmap-wrap { margin-bottom: 24px; }
 .heatmap-person { margin-bottom: 20px; }
 .heatmap-person-name {
@@ -622,6 +699,10 @@ code {
     flex-direction: column;
     align-items: flex-start;
     gap: 10px;
+  }
+
+  .history-grid {
+    grid-template-columns: 1fr;
   }
 }
 
