@@ -14,7 +14,8 @@ export const MEMBERS = [
     accentClass: 'accent',
     badgeClass: 'badge-gold',
     chartColor: '#ff9ecb',
-    heatColorRgb: '255, 158, 203'
+    heatColorRgb: '255, 158, 203',
+    lightTextColor: '#c9578b'
   },
   {
     id: 'shan',
@@ -25,7 +26,8 @@ export const MEMBERS = [
     accentClass: 'accent2',
     badgeClass: 'badge-silver',
     chartColor: '#b7f5c5',
-    heatColorRgb: '183, 245, 197'
+    heatColorRgb: '183, 245, 197',
+    lightTextColor: '#3e9361'
   },
   {
     id: 'yuan',
@@ -36,7 +38,8 @@ export const MEMBERS = [
     accentClass: 'warn',
     badgeClass: 'badge-bronze',
     chartColor: '#a7d8ff',
-    heatColorRgb: '167, 216, 255'
+    heatColorRgb: '167, 216, 255',
+    lightTextColor: '#4b8fcb'
   }
 ];
 

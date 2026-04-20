@@ -35,12 +35,35 @@ function renderEmptyRow(columns, message) {
   return `<div class="score-row">${cells.join('')}</div>`;
 }
 
+function isLightTheme() {
+  return document.body.classList.contains('light-theme');
+}
+
+function getMemberUiColor(member) {
+  return isLightTheme() ? member.lightTextColor : member.chartColor;
+}
+
 function getHeatmapColor(member, level) {
-  if (!level) return '';
-  if (level === 1) return 'rgba(255, 255, 255, 0.96)';
+  if (level === 0) return `rgba(${member.heatColorRgb}, ${isLightTheme() ? '0.14' : '0.08'})`;
+  if (level === 1) return `rgba(${member.heatColorRgb}, ${isLightTheme() ? '0.32' : '0.22'})`;
   if (level === 2) return `rgba(${member.heatColorRgb}, 0.5)`;
   if (level === 3) return `rgba(${member.heatColorRgb}, 0.78)`;
   return `rgba(${member.heatColorRgb}, 1)`;
+}
+
+function getHeatmapBorderColor(member, level) {
+  if (level === 0) return `rgba(${member.heatColorRgb}, ${isLightTheme() ? '0.38' : '0.16'})`;
+  if (level === 1) return `rgba(${member.heatColorRgb}, ${isLightTheme() ? '0.58' : '0.34'})`;
+  return 'transparent';
+}
+
+function getBadgeStyle(member) {
+  const uiColor = getMemberUiColor(member);
+  const background = isLightTheme()
+    ? `rgba(${member.heatColorRgb}, 0.16)`
+    : `rgba(${member.heatColorRgb}, 0.08)`;
+
+  return `border-color:${uiColor};color:${uiColor};background:${background}`;
 }
 
 function renderRankingRows(ranking) {
@@ -81,7 +104,7 @@ function renderHistoryCards(members) {
           <div class="title-name">${escapeHtml(member.name)}</div>
           <div class="title-sub">共 ${member.totalCheckins} 次打卡 · 最近 ${escapeHtml(formatMetaDate(member.lastDate))}</div>
         </div>
-        <div class="title-badge" style="border-color:${member.chartColor};color:${member.chartColor}">${member.currentStreak} 天连续</div>
+        <div class="title-badge" style="${getBadgeStyle(member)}">${member.currentStreak} 天连续</div>
       </div>
       <div class="history-list">
         ${member.history.length ? member.history.map(item => `
@@ -116,7 +139,7 @@ function renderLeaderboardTitles(ranking) {
         <div class="title-sub">当前积分 ${member.weekScore} · 当前连续 ${member.currentStreak} 天 · 最长连续 ${member.longestStreak} 天</div>
       </div>
       <div style="text-align:right">
-        <div class="title-badge" style="border-color:${member.chartColor};color:${member.chartColor}">${escapeHtml(member.badge)}</div>
+        <div class="title-badge" style="${getBadgeStyle(member)}">${escapeHtml(member.badge)}</div>
       </div>
     </div>
   `).join('');
@@ -137,7 +160,7 @@ function renderDashboard(viewModel) {
     if (status) {
       const done = Boolean(member.todayDone);
       status.textContent = done ? 'DONE' : `W${member.weekRate || 0}%`;
-      status.style.color = done ? member.chartColor : getCssVar('--c-muted');
+      status.style.color = done ? getMemberUiColor(member) : getCssVar('--c-muted');
       status.classList.toggle('done', done);
       status.classList.toggle('miss', !done);
     }
@@ -191,7 +214,7 @@ function renderHeatmaps(members) {
     grid.innerHTML = member.heatmap.map(cell => `
       <div
         class="heatmap-cell${cell.level ? ` d${cell.level}` : ''}"
-        style="${cell.level ? `background:${getHeatmapColor(member, cell.level)};border-color:${cell.level === 1 ? member.chartColor : 'transparent'};` : ''}"
+        style="background:${getHeatmapColor(member, cell.level)};border-color:${getHeatmapBorderColor(member, cell.level)};"
         title="${escapeHtml(`${member.name} ${cell.date} · ${cell.count} 次`)}"
       ></div>
     `).join('');
