@@ -3,74 +3,88 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>雨夜咖啡馆</title>
+  <meta name="theme-color" content="#201a19" />
+  <title>雨声咖啡馆</title>
   <link rel="stylesheet" href="./assets/css/styles.css" />
 </head>
 <body>
-  <div class="app">
-    <nav class="nav">
-      <div class="nav-logo">雨夜<span>咖啡馆</span></div>
-      <button class="nav-tab active" onclick="showPage('dashboard', this)">咖啡馆</button>
-      <button class="nav-tab" onclick="showPage('checkin', this)">旧打卡</button>
-      <button class="nav-tab" onclick="showPage('leaderboard', this)">排行榜</button>
-      <button class="nav-tab" onclick="showPage('analytics', this)">趋势</button>
-      <button class="nav-tab" onclick="showPage('history', this)">历史</button>
-      <button class="nav-tab" onclick="showPage('rules', this)">规则</button>
-      <button class="nav-tab" onclick="toggleTheme()">黑/白</button>
-    </nav>
+  <main class="cafe-app">
+    <div class="rain-layer" aria-hidden="true"></div>
+    <div class="window-glow" aria-hidden="true"></div>
 
-    <div class="page active cafe-page" id="page-dashboard">
-      <div class="cafe-hero">
+    <header class="topbar">
+      <a class="brand" href="./">雨声咖啡馆 <span>RAINY CAFE</span></a>
+      <div class="topbar-actions">
+        <span class="open-status"><i></i> OPEN ALL NIGHT</span>
+        <button class="icon-button" type="button" onclick="toggleAmbient()" aria-label="切换环境音" title="切换环境音">♫</button>
+        <button class="icon-button" type="button" onclick="toggleSettings()" aria-label="打开设置" title="设置">☼</button>
+      </div>
+    </header>
+
+    <section class="cafe-scene" aria-label="沉浸式咖啡馆">
+      <div class="scene-window">
+        <div class="window-city">
+          <span></span><span></span><span></span><span></span><span></span>
+        </div>
+        <div class="window-rain"></div>
+        <div class="window-frame vertical"></div>
+        <div class="window-frame horizontal"></div>
+      </div>
+      <div class="cafe-shelf">
+        <span class="shelf-cup">☕</span>
+        <span class="shelf-book"></span><span class="shelf-book small"></span>
+        <span class="shelf-plant">♧</span>
+      </div>
+      <div class="hanging-lamp"><b></b></div>
+      <div class="cafe-counter"></div>
+      <div class="table-surface">
+        <div class="coffee-cup"><i></i><b></b></div>
+        <div class="paper-stack"><span></span><span></span><span></span></div>
+        <div class="cat" id="cafe-cat" aria-label="陪伴猫猫">🐈</div>
+        <div class="cat-shadow"></div>
+      </div>
+      <div class="cafe-neon">coffee<br><small>and quiet things</small></div>
+    </section>
+
+    <section class="workspace">
+      <div class="welcome-line">
         <div>
-          <p class="cafe-kicker">雨夜咖啡馆 · 现在营业</p>
-          <h1>今晚也找个舒服的位置吧。</h1>
-          <p class="cafe-subtitle">点一杯热饮，选一只猫猫，安静完成手边的事。</p>
+          <p class="eyebrow">YOUR LITTLE CORNER</p>
+          <h1>今晚坐这里。</h1>
+          <p class="welcome-copy">雨还在下，咖啡是热的。把要做的事情放在桌上，慢慢来。</p>
         </div>
-        <div class="cafe-clock" id="cafe-clock">00:00</div>
+        <div class="current-time" id="cafe-clock">00:00</div>
       </div>
 
-      <div class="cafe-scene">
-        <div class="cafe-window"><span></span><i></i><b></b></div>
-        <div class="cafe-shelf"><span>☕</span><span>✦</span><span>📚</span></div>
-        <div class="cafe-lamp"></div>
-        <div class="cafe-table">
-          <div class="cafe-cup">☕</div>
-          <div class="cafe-notebook"></div>
-          <div class="cafe-cat" id="cafe-cat" aria-label="陪伴猫猫">🐈</div>
-          <div class="cafe-cat-shadow"></div>
-        </div>
-        <div class="cafe-sign">OPEN · 24H</div>
-      </div>
-
-      <div class="cafe-grid">
-        <section class="cafe-panel pomodoro-panel">
-          <div class="cafe-panel-heading">
-            <div><span class="cafe-label">FOCUS TIMER</span><h2>番茄钟</h2></div>
-            <span class="cafe-status" id="pomodoro-status">准备好了</span>
+      <div class="desk-grid">
+        <section class="card focus-card">
+          <div class="card-heading">
+            <div><p class="eyebrow">FOCUS SESSION</p><h2>专注一会儿</h2></div>
+            <span class="session-state" id="pomodoro-status">READY</span>
           </div>
-          <div class="pomodoro-time" id="pomodoro-time">25:00</div>
-          <div class="pomodoro-task" id="pomodoro-task-label">为当前任务专注一会儿</div>
-          <div class="pomodoro-actions">
-            <button class="cafe-primary-btn" id="pomodoro-toggle" type="button" onclick="togglePomodoro()">开始专注</button>
-            <button class="cafe-quiet-btn" type="button" onclick="resetPomodoro()">重置</button>
+          <div class="timer" id="pomodoro-time">25:00</div>
+          <p class="timer-caption" id="pomodoro-task-label">选一件小事，开始就好。</p>
+          <div class="timer-actions">
+            <button class="primary-button" id="pomodoro-toggle" type="button" onclick="togglePomodoro()">开始专注</button>
+            <button class="text-button" type="button" onclick="resetPomodoro()">重置</button>
           </div>
         </section>
 
-        <section class="cafe-panel tasks-panel">
-          <div class="cafe-panel-heading">
-            <div><span class="cafe-label">TODAY'S TABLE</span><h2>今日桌面</h2></div>
-            <span class="task-count" id="task-count">0/0</span>
+        <section class="card tasks-card">
+          <div class="card-heading">
+            <div><p class="eyebrow">ON YOUR TABLE</p><h2>今天要做的事</h2></div>
+            <span class="task-count" id="task-count">0 / 0</span>
           </div>
           <form class="task-form" onsubmit="addCafeTask(event)">
-            <input id="cafe-task-input" type="text" maxlength="80" placeholder="记下一件要完成的事…" autocomplete="off">
+            <input id="cafe-task-input" type="text" maxlength="80" placeholder="写下一件事…" autocomplete="off" />
             <button type="submit" aria-label="添加任务">+</button>
           </form>
-          <div class="cafe-task-list" id="cafe-task-list"></div>
+          <div class="task-list" id="cafe-task-list"></div>
         </section>
 
-        <section class="cafe-panel cafe-controls">
-          <div class="cafe-panel-heading">
-            <div><span class="cafe-label">YOUR COMPANION</span><h2>选择陪伴猫猫</h2></div>
+        <section class="card companion-card">
+          <div class="card-heading">
+            <div><p class="eyebrow">YOUR COMPANY</p><h2>今天和谁一起？</h2></div>
           </div>
           <div class="cat-picker" role="group" aria-label="选择陪伴猫猫">
             <button type="button" class="cat-option selected" data-cat="🐈" onclick="selectCafeCat(this)">🐈<small>小黑</small></button>
@@ -78,267 +92,34 @@
             <button type="button" class="cat-option" data-cat="🐱" onclick="selectCafeCat(this)">🐱<small>奶糖</small></button>
             <button type="button" class="cat-option" data-cat="😺" onclick="selectCafeCat(this)">😺<small>橘子</small></button>
           </div>
-          <div class="sound-row"><span>☔ 雨夜环境音</span><button type="button" class="sound-toggle" id="sound-toggle" onclick="toggleCafeSound()">开启</button></div>
-          <p class="cafe-note">音乐和歌单功能即将加入，先让猫猫陪你坐一会儿。</p>
+          <div class="ambient-row">
+            <span><i class="sound-dot"></i>雨声与咖啡馆</span>
+            <button class="sound-toggle" id="sound-toggle" type="button" onclick="toggleAmbient()">开启</button>
+          </div>
+          <p class="small-note" id="ambient-note">让窗外的雨替你挡住一点喧嚣。</p>
         </section>
       </div>
-    </div>
+    </section>
 
-    <div class="page" id="page-checkin">
-      <p class="section-label" style="margin-top:4px">提交打卡</p>
+    <footer class="footer">
+      <span>TABLE 07 · WINDOW SEAT</span>
+      <span id="footer-message">猫猫会陪你到这一轮结束。</span>
+      <button type="button" onclick="toggleSettings()">ABOUT THIS PLACE</button>
+    </footer>
+  </main>
 
-      <div class="form-card">
-        <div class="form-grid">
-          <div class="form-group">
-            <label class="form-label">// 用户</label>
-            <select class="form-select" id="user-select">
-              <option>漾</option>
-              <option>闪</option>
-              <option>源</option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">// 日期</label>
-            <input class="form-input" type="date" id="date-input">
-          </div>
-
-          <div class="form-group full">
-            <label class="form-label">// 打卡类型</label>
-            <div class="type-grid">
-              <button type="button" class="type-btn selected" data-type="健身房" onclick="selectType(this)">健身房</button>
-              <button type="button" class="type-btn" data-type="居家运动" onclick="selectType(this)">居家运动</button>
-              <button type="button" class="type-btn" data-type="饮食稳定" onclick="selectType(this)">饮食稳定</button>
-              <button type="button" class="type-btn" data-type="补卡" onclick="selectType(this)">补卡</button>
-              <button type="button" class="type-btn" data-type="经期无暴食" onclick="selectType(this)">经期无暴食</button>
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">// 时长 (分钟)</label>
-            <input class="form-input" type="number" id="duration-input" placeholder="20" min="0" max="300">
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">// 步数 (可选)</label>
-            <input class="form-input" type="number" id="steps-input" placeholder="8000">
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">// 上传附件 (可选)</label>
-            <input
-              class="form-input"
-              type="file"
-              id="evidence-file-input"
-              accept="image/*,.pdf,.txt,.doc,.docx,.zip,.rar,.7z,.heic,.heif"
-              onchange="handleEvidenceFileChange()"
-            >
-            <div id="evidence-file-meta" class="file-meta">未选择附件</div>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">// 体重 kg (可选)</label>
-            <input class="form-input" type="number" id="weight-input" placeholder="50.0" step="0.1">
-          </div>
-
-          <div class="form-group full">
-            <label class="form-label">// 备注</label>
-            <input class="form-input" type="text" id="note-input" placeholder="例如：快走20分钟 / 经期无暴食 / 补卡说明">
-          </div>
-        </div>
-
-        <button class="submit-btn" id="submit-btn" onclick="submitCheckin()">[ 提交打卡 ]</button>
-      </div>
-
-      <div class="rule-block">
-        <div class="rule-head">// 当前执行逻辑</div>
-        <div class="rule-item"><span class="rule-dot">→</span><span>朋友只需要在网页填写表单，不需要 GitHub 账号</span></div>
-        <div class="rule-item"><span class="rule-dot">→</span><span>表单会提交到后端接口，再由后端写入 GitHub 数据</span></div>
-        <div class="rule-item"><span class="rule-dot">→</span><span>附件小于 2MB 时会以 base64 一起提交到后端</span></div>
-      </div>
-    </div>
-
-    <div class="page" id="page-leaderboard">
-      <p class="section-label" style="margin-top:4px">称号 & 历史</p>
-
-      <div id="leaderboard-title-list"></div>
-
-      <p class="section-label" style="margin-top:20px">公共池记录</p>
-      <div class="score-table" id="leaderboard-pool-table">
-        <div class="score-row header">
-          <span style="font-family:var(--c-mono);font-size:10px;color:var(--c-muted)">#</span>
-          <span style="font-family:var(--c-mono);font-size:10px;color:var(--c-muted)">事件</span>
-          <span style="font-family:var(--c-mono);font-size:10px;color:var(--c-muted);text-align:right">金额</span>
-          <span style="font-family:var(--c-mono);font-size:10px;color:var(--c-muted);text-align:right">日期</span>
-        </div>
-      </div>
-    </div>
-
-    <div class="page" id="page-analytics">
-      <p class="section-label" style="margin-top:4px">趋势分析 · 最近 30 天</p>
-
-      <div class="chart-wrap">
-        <div class="chart-title">// 打卡热力图</div>
-        <div class="heatmap-wrap">
-          <div class="heatmap-person">
-            <div class="heatmap-person-name">漾</div>
-            <div class="heatmap-grid" id="heat-yang"></div>
-          </div>
-
-          <div class="heatmap-person">
-            <div class="heatmap-person-name">闪</div>
-            <div class="heatmap-grid" id="heat-shan"></div>
-          </div>
-
-          <div class="heatmap-person">
-            <div class="heatmap-person-name">源</div>
-            <div class="heatmap-grid" id="heat-yuan"></div>
-          </div>
-
-          <div style="display:flex;gap:10px;margin-top:10px;align-items:center;flex-wrap:wrap">
-            <span style="font-size:11px;color:var(--c-muted);font-family:var(--c-mono)">低</span>
-            <div style="width:12px;height:12px;border-radius:2px;background:var(--c-border)"></div>
-            <div style="width:12px;height:12px;border-radius:2px;background:#3a3a3a"></div>
-            <div style="width:12px;height:12px;border-radius:2px;background:#6a6a6a"></div>
-            <div style="width:12px;height:12px;border-radius:2px;background:#9a9a9a"></div>
-            <div style="width:12px;height:12px;border-radius:2px;background:#dcdcdc"></div>
-            <span style="font-size:11px;color:var(--c-muted);font-family:var(--c-mono)">高</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="chart-wrap">
-        <div class="chart-title">// 每周完成率</div>
-        <div style="position:relative;width:100%;height:220px">
-          <canvas id="trendChart" role="img" aria-label="每周完成率折线图">趋势图</canvas>
-        </div>
-      </div>
-
-      <div class="stat-grid">
-        <div class="stat-card">
-          <div class="stat-label">本月整体完成率</div>
-          <div class="stat-val accent" id="analytics-month-rate">0%</div>
-        </div>
-
-        <div class="stat-card">
-          <div class="stat-label">公共池累计</div>
-          <div class="stat-val warn" id="analytics-pool-balance">¥ 0</div>
-        </div>
-
-        <div class="stat-card">
-          <div class="stat-label">总打卡次数</div>
-          <div class="stat-val accent2" id="analytics-total-checkins">0</div>
-        </div>
-
-        <div class="stat-card">
-          <div class="stat-label">全员完成天数</div>
-          <div class="stat-val" style="color:var(--c-purple)" id="analytics-all-done-days">0天</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="page" id="page-history">
-      <p class="section-label" style="margin-top:4px">三人历史记录</p>
-      <div class="history-editor hidden" id="history-editor">
-        <div class="history-editor-head">
-          <div>
-            <div class="title-name">编辑记录</div>
-            <div class="title-sub" id="history-editor-subtitle">修改后会立即同步到首页、热力图和趋势图</div>
-          </div>
-          <button class="history-ghost-btn" type="button" onclick="cancelHistoryEdit()">取消</button>
-        </div>
-        <div class="form-grid">
-          <div class="form-group">
-            <label class="form-label">// 用户</label>
-            <select class="form-select" id="history-user-select">
-              <option>漾</option>
-              <option>闪</option>
-              <option>源</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label class="form-label">// 日期</label>
-            <input class="form-input" type="date" id="history-date-input">
-          </div>
-          <div class="form-group full">
-            <label class="form-label">// 打卡类型</label>
-            <select class="form-select" id="history-type-select">
-              <option>健身房</option>
-              <option>居家运动</option>
-              <option>饮食稳定</option>
-              <option>补卡</option>
-              <option>经期无暴食</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label class="form-label">// 时长 (分钟)</label>
-            <input class="form-input" type="number" id="history-duration-input" min="0" max="300">
-          </div>
-          <div class="form-group">
-            <label class="form-label">// 步数</label>
-            <input class="form-input" type="number" id="history-steps-input" min="0">
-          </div>
-          <div class="form-group">
-            <label class="form-label">// 体重 kg</label>
-            <input class="form-input" type="number" id="history-weight-input" step="0.1">
-          </div>
-          <div class="form-group full">
-            <label class="form-label">// 备注</label>
-            <input class="form-input" type="text" id="history-note-input" placeholder="补充这次打卡的说明">
-          </div>
-        </div>
-        <div class="history-editor-actions">
-          <button class="submit-btn history-save-btn" type="button" onclick="saveHistoryEdit()">保存修改</button>
-          <div class="history-editor-tip">当前编辑会保存在本浏览器，并立即重新计算所有统计视图。</div>
-        </div>
-      </div>
-      <div class="history-grid" id="history-grid"></div>
-    </div>
-
-    <div class="page" id="page-rules">
-      <p class="section-label" style="margin-top:4px">群规 · 当前版本</p>
-
-      <div class="rule-block">
-        <div class="rule-head">// 小荷包规则</div>
-        <div class="rule-item"><span class="rule-dot">¥</span><span>每人先放 50 元进入支付宝小荷包</span></div>
-        <div class="rule-item"><span class="rule-dot">¥</span><span>当天没打卡 = -5 元进入公共池</span></div>
-        <div class="rule-item"><span class="rule-dot">¥</span><span>每周日结算：第一名拿公共池 60%，第二名拿 30%，第三名拿 10%</span></div>
-        <div class="rule-item"><span class="rule-dot">¥</span><span>如果三人都正常完成，则押金沿用到下个月</span></div>
-        <div class="rule-item"><span class="rule-dot">¥</span><span>直到谁先达到自己设立的目标，谁可以一次性拿走全部押金</span></div>
-      </div>
-
-      <div class="rule-block">
-        <div class="rule-head">// 补救机制</div>
-        <div class="rule-item"><span class="rule-dot">→</span><span>每人每周有 3 次补卡机会，可以补 3 天，不扣钱</span></div>
-        <div class="rule-item"><span class="rule-dot">→</span><span>整体按“上四休三”理解，允许有休息和缓冲空间</span></div>
-        <div class="rule-item"><span class="rule-dot">→</span><span>补卡用于修复中断，不用于制造完美假象</span></div>
-      </div>
-
-      <div class="rule-block">
-        <div class="rule-head">// 特殊情况</div>
-        <div class="rule-item"><span class="rule-dot">01</span><span>经期不计入运动打卡要求</span></div>
-        <div class="rule-item"><span class="rule-dot">02</span><span>如经期当天未发生暴食行为，则算打卡完成</span></div>
-      </div>
-
-      <div class="rule-block">
-        <div class="rule-head">// 最重要的原则</div>
-        <div class="rule-item"><span class="rule-dot">!</span><span>允许有断掉的，但不能连续断，断开后要及时开始</span></div>
-        <div class="rule-item"><span class="rule-dot">!</span><span>最低可以只做 20 分钟</span></div>
-        <div class="rule-item"><span class="rule-dot">!</span><span>机制的目标是让三个人长期不断线，而不是制造压力表演</span></div>
-      </div>
-
-      <div class="rule-block">
-        <div class="rule-head">// 技术说明</div>
-        <div class="rule-item"><span class="rule-dot">→</span><span>所有打卡数据会保存在 GitHub 仓库中</span></div>
-        <div class="rule-item"><span class="rule-dot">→</span><span>由后端接口写入 GitHub 数据文件</span></div>
-        <div class="rule-item"><span class="rule-dot">→</span><span>争议以仓库记录为准</span></div>
-      </div>
-    </div>
+  <div class="settings-drawer" id="settings-drawer" aria-hidden="true">
+    <div class="drawer-backdrop" onclick="toggleSettings()"></div>
+    <section class="drawer">
+      <button class="close-button" type="button" onclick="toggleSettings()" aria-label="关闭设置">×</button>
+      <p class="eyebrow">A QUIET PLACE</p>
+      <h2>这里暂时只有你、猫猫和雨声。</h2>
+      <p>任务和猫猫选择会保存在这台设备上。番茄钟结束时，猫猫会起身提醒你休息一下。</p>
+      <div class="drawer-rule"></div>
+      <button class="drawer-action" type="button" onclick="clearCafeTasks()">清空今天的任务</button>
+    </section>
   </div>
 
-  <div class="toast" id="toast">[ 提示 ]</div>
-
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
   <script type="module" src="./assets/js/main.js"></script>
 </body>
 </html>

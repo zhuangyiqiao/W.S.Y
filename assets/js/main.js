@@ -1,104 +1,27 @@
-import { deleteCheckinRequest, updateCheckinRequest } from './api.js';
-import { getCheckinById, loadCheckinsData } from './data.js';
-import {
-  fillHistoryEditor,
-  renderApp,
-  renderLoadError,
-  resetHistoryEditor,
-  showPage,
-  showToast,
-  toggleHistoryEditor,
-  updateChartTheme
-} from './render.js';
-import { handleEvidenceFileChange, selectType, submitCheckin, validatePayload } from './checkin.js';
+let timerId = null;
+let remainingSeconds = 25 * 60;
+let timerRunning = false;
+let statusMessage = '';
+let ambientOn = false;
 
-let activeEditingRecordId = '';
-let cafeTimerId = null;
-let cafeRemainingSeconds = 25 * 60;
-let cafeIsRunning = false;
-let cafeStatusMessage = '';
+const taskStorageKey = 'rainy-cafe-tasks';
+const catStorageKey = 'rainy-cafe-cat';
 
-function toggleTheme() {
-  document.body.classList.toggle('light-theme');
-  const theme = document.body.classList.contains('light-theme') ? 'light' : 'dark';
-  localStorage.setItem('ironpact-theme', theme);
-  updateChartTheme();
-}
-
-function initTheme() {
-  const saved = localStorage.getItem('ironpact-theme');
-  if (saved === 'light') {
-    document.body.classList.add('light-theme');
-  }
-}
-
-function initToday() {
-  const today = new Date();
-  const yyyy = today.getFullYear();
-  const mm = String(today.getMonth() + 1).padStart(2, '0');
-  const dd = String(today.getDate()).padStart(2, '0');
-  const input = document.getElementById('date-input');
-  if (input) input.value = `${yyyy}-${mm}-${dd}`;
-}
-
-function renderCafeClock() {
-  const element = document.getElementById('cafe-clock');
-  if (!element) return;
-  element.textContent = new Date().toLocaleTimeString('zh-CN', {
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false
-  });
-}
-
-function renderCafeTimer() {
-  const element = document.getElementById('pomodoro-time');
-  const status = document.getElementById('pomodoro-status');
-  const toggle = document.getElementById('pomodoro-toggle');
-  if (!element || !status || !toggle) return;
-
-  const minutes = Math.floor(cafeRemainingSeconds / 60);
-  const seconds = cafeRemainingSeconds % 60;
-  element.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-  toggle.textContent = cafeIsRunning ? '暂停专注' : '开始专注';
-  status.textContent = cafeStatusMessage || (
-    cafeIsRunning ? '专注中' : cafeRemainingSeconds < 25 * 60 ? '已暂停' : '准备好了'
-  );
-}
-
-function getCafeTasks() {
+function getTasks() {
   try {
-    const tasks = JSON.parse(localStorage.getItem('rainy-cafe-tasks') || '[]');
-    return Array.isArray(tasks) ? tasks : [];
+    const stored = JSON.parse(localStorage.getItem(taskStorageKey) || '[]');
+    return Array.isArray(stored) ? stored : [];
   } catch (error) {
-    console.error(error);
+    console.error('读取任务失败', error);
     return [];
   }
 }
 
-function saveCafeTasks(tasks) {
-  localStorage.setItem('rainy-cafe-tasks', JSON.stringify(tasks));
+function saveTasks(tasks) {
+  localStorage.setItem(taskStorageKey, JSON.stringify(tasks));
 }
 
-function renderCafeTasks() {
-  const list = document.getElementById('cafe-task-list');
-  const count = document.getElementById('task-count');
-  if (!list || !count) return;
-
-  const tasks = getCafeTasks();
-  const completed = tasks.filter(task => task.completed).length;
-  count.textContent = `${completed}/${tasks.length}`;
-  list.innerHTML = tasks.length
-    ? tasks.map(task => `
-        <label class="cafe-task${task.completed ? ' done' : ''}">
-          <input type="checkbox" ${task.completed ? 'checked' : ''} onchange="toggleCafeTask('${task.id}')">
-          <span>${escapeCafeText(task.title)}</span>
-        </label>
-      `).join('')
-    : '<div class="cafe-note">还没有任务，写下一件今晚想完成的事吧。</div>';
-}
-
-function escapeCafeText(value) {
+function escapeHtml(value) {
   return String(value).replace(/[&<>"']/g, character => ({
     '&': '&amp;',
     '<': '&lt;',
@@ -108,214 +31,169 @@ function escapeCafeText(value) {
   }[character]));
 }
 
+function renderClock() {
+  const clock = document.getElementById('cafe-clock');
+  if (!clock) return;
+  clock.textContent = new Date().toLocaleTimeString('zh-CN', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false
+  });
+}
+
+function renderTimer() {
+  const timer = document.getElementById('pomodoro-time');
+  const status = document.getElementById('pomodoro-status');
+  const toggle = document.getElementById('pomodoro-toggle');
+  if (!timer || !status || !toggle) return;
+
+  const minutes = Math.floor(remainingSeconds / 60);
+  const seconds = remainingSeconds % 60;
+  timer.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+  status.textContent = statusMessage || (timerRunning ? 'FOCUSING' : remainingSeconds < 25 * 60 ? 'PAUSED' : 'READY');
+  toggle.textContent = timerRunning ? '暂停专注' : '开始专注';
+}
+
+function renderTasks() {
+  const list = document.getElementById('cafe-task-list');
+  const count = document.getElementById('task-count');
+  if (!list || !count) return;
+
+  const tasks = getTasks();
+  const completed = tasks.filter(task => task.completed).length;
+  count.textContent = `${completed} / ${tasks.length}`;
+
+  list.innerHTML = tasks.length
+    ? tasks.map(task => `
+        <label class="task-row${task.completed ? ' completed' : ''}">
+          <input type="checkbox" ${task.completed ? 'checked' : ''} onchange="toggleCafeTask('${task.id}')">
+          <span>${escapeHtml(task.title)}</span>
+          <button type="button" aria-label="删除任务" onclick="removeCafeTask(event, '${task.id}')">×</button>
+        </label>
+      `).join('')
+    : '<p class="empty-tasks">桌面还是空的，写下一件今晚想完成的事吧。</p>';
+}
+
 function addCafeTask(event) {
   event.preventDefault();
   const input = document.getElementById('cafe-task-input');
   const title = input?.value.trim();
   if (!title) return;
 
-  const tasks = getCafeTasks();
-  tasks.push({ id: `${Date.now()}-${Math.random().toString(16).slice(2)}`, title, completed: false });
-  saveCafeTasks(tasks);
+  const tasks = getTasks();
+  tasks.push({
+    id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
+    title,
+    completed: false
+  });
+  saveTasks(tasks);
   input.value = '';
-  renderCafeTasks();
+  renderTasks();
 }
 
 function toggleCafeTask(taskId) {
-  const tasks = getCafeTasks().map(task => (
+  const tasks = getTasks().map(task => (
     task.id === taskId ? { ...task, completed: !task.completed } : task
   ));
-  saveCafeTasks(tasks);
-  renderCafeTasks();
+  saveTasks(tasks);
+  renderTasks();
+}
+
+function removeCafeTask(event, taskId) {
+  event.preventDefault();
+  event.stopPropagation();
+  saveTasks(getTasks().filter(task => task.id !== taskId));
+  renderTasks();
+}
+
+function clearCafeTasks() {
+  if (!getTasks().length) return;
+  localStorage.removeItem(taskStorageKey);
+  renderTasks();
+  toggleSettings();
+}
+
+function finishPomodoro() {
+  window.clearInterval(timerId);
+  timerId = null;
+  timerRunning = false;
+  remainingSeconds = 25 * 60;
+  statusMessage = 'MEOW! DONE';
+  document.getElementById('footer-message').textContent = '这一轮完成了，起来走走吧。';
+  const cat = document.getElementById('cafe-cat');
+  cat?.classList.add('celebrate');
+  window.setTimeout(() => cat?.classList.remove('celebrate'), 1800);
+  renderTimer();
 }
 
 function togglePomodoro() {
-  cafeStatusMessage = '';
-  cafeIsRunning = !cafeIsRunning;
-  if (cafeIsRunning) {
-    cafeTimerId = window.setInterval(() => {
-      cafeRemainingSeconds -= 1;
-      if (cafeRemainingSeconds <= 0) {
-        window.clearInterval(cafeTimerId);
-        cafeTimerId = null;
-        cafeRemainingSeconds = 25 * 60;
-        cafeIsRunning = false;
-        cafeStatusMessage = '完成啦，喵！';
-        document.getElementById('cafe-cat')?.classList.add('celebrate');
-        window.setTimeout(() => document.getElementById('cafe-cat')?.classList.remove('celebrate'), 1800);
-      }
-      renderCafeTimer();
+  statusMessage = '';
+  timerRunning = !timerRunning;
+  if (timerRunning) {
+    timerId = window.setInterval(() => {
+      remainingSeconds -= 1;
+      if (remainingSeconds <= 0) finishPomodoro();
+      renderTimer();
     }, 1000);
-  } else if (cafeTimerId) {
-    window.clearInterval(cafeTimerId);
-    cafeTimerId = null;
+  } else {
+    window.clearInterval(timerId);
+    timerId = null;
   }
-  renderCafeTimer();
+  renderTimer();
 }
 
 function resetPomodoro() {
-  if (cafeTimerId) window.clearInterval(cafeTimerId);
-  cafeTimerId = null;
-  cafeRemainingSeconds = 25 * 60;
-  cafeIsRunning = false;
-  cafeStatusMessage = '';
-  renderCafeTimer();
+  window.clearInterval(timerId);
+  timerId = null;
+  remainingSeconds = 25 * 60;
+  timerRunning = false;
+  statusMessage = '';
+  document.getElementById('footer-message').textContent = '猫猫会陪你到这一轮结束。';
+  renderTimer();
 }
 
 function selectCafeCat(button) {
   document.querySelectorAll('.cat-option').forEach(option => option.classList.remove('selected'));
   button.classList.add('selected');
-  const cat = document.getElementById('cafe-cat');
-  if (cat) cat.textContent = button.dataset.cat;
-  localStorage.setItem('rainy-cafe-cat', button.dataset.cat);
+  document.getElementById('cafe-cat').textContent = button.dataset.cat;
+  localStorage.setItem(catStorageKey, button.dataset.cat);
 }
 
-function initCafeWorkspace() {
-  renderCafeClock();
-  renderCafeTimer();
-  renderCafeTasks();
-  window.setInterval(renderCafeClock, 1000);
+function toggleAmbient() {
+  ambientOn = !ambientOn;
+  const button = document.getElementById('sound-toggle');
+  const note = document.getElementById('ambient-note');
+  document.querySelector('.cafe-app')?.classList.toggle('ambient-on', ambientOn);
+  if (button) button.textContent = ambientOn ? '已开启' : '开启';
+  if (note) note.textContent = ambientOn ? '雨声正在窗外播放，祝你今晚顺利。' : '让窗外的雨替你挡住一点喧嚣。';
+}
 
-  const savedCat = localStorage.getItem('rainy-cafe-cat');
+function toggleSettings() {
+  const drawer = document.getElementById('settings-drawer');
+  if (!drawer) return;
+  const isOpen = drawer.classList.toggle('open');
+  drawer.setAttribute('aria-hidden', String(!isOpen));
+}
+
+function init() {
+  renderClock();
+  renderTimer();
+  renderTasks();
+  window.setInterval(renderClock, 1000);
+
+  const savedCat = localStorage.getItem(catStorageKey);
   const savedButton = [...document.querySelectorAll('.cat-option')].find(button => button.dataset.cat === savedCat);
   if (savedButton) selectCafeCat(savedButton);
 }
 
-function toggleCafeSound() {
-  const button = document.getElementById('sound-toggle');
-  if (!button) return;
-  const enabled = button.dataset.enabled !== 'true';
-  button.dataset.enabled = String(enabled);
-  button.textContent = enabled ? '已开启' : '开启';
-}
-
-async function refreshAppData() {
-  try {
-    const viewModel = await loadCheckinsData();
-    renderApp(viewModel);
-
-    if (activeEditingRecordId && !getCheckinById(activeEditingRecordId)) {
-      activeEditingRecordId = '';
-      resetHistoryEditor();
-    }
-  } catch (error) {
-    console.error(error);
-    renderLoadError(error.message || '初始化失败');
-    showToast('[ 数据加载失败 ]', 3000);
-  }
-}
-
-function getHistoryEditorPayload() {
-  return {
-    user: document.getElementById('history-user-select')?.value || '',
-    date: document.getElementById('history-date-input')?.value || '',
-    type: document.getElementById('history-type-select')?.value || '',
-    duration: document.getElementById('history-duration-input')?.value
-      ? Number(document.getElementById('history-duration-input').value)
-      : null,
-    steps: document.getElementById('history-steps-input')?.value
-      ? Number(document.getElementById('history-steps-input').value)
-      : null,
-    weight: document.getElementById('history-weight-input')?.value
-      ? Number(document.getElementById('history-weight-input').value)
-      : null,
-    note: document.getElementById('history-note-input')?.value?.trim() || ''
-  };
-}
-
-function cancelHistoryEdit() {
-  activeEditingRecordId = '';
-  resetHistoryEditor();
-}
-
-function startHistoryEdit(recordId) {
-  const record = getCheckinById(recordId);
-  if (!record) {
-    showToast('[ 没有找到这条记录 ]', 2400);
-    return;
-  }
-
-  activeEditingRecordId = recordId;
-  fillHistoryEditor(record);
-}
-
-async function saveHistoryEdit() {
-  if (!activeEditingRecordId) {
-    showToast('[ 请先选择一条记录 ]', 2400);
-    return;
-  }
-
-  const payload = getHistoryEditorPayload();
-  const error = validatePayload(payload);
-  if (error) {
-    showToast(`[ ${error} ]`, 2600);
-    return;
-  }
-
-  try {
-    await updateCheckinRequest(activeEditingRecordId, payload);
-    await refreshAppData();
-    showToast('[ 历史记录已更新 ]');
-    cancelHistoryEdit();
-  } catch (err) {
-    console.error(err);
-    showToast(`[ ${err.message || '更新失败'} ]`, 2800);
-  }
-}
-
-async function deleteHistoryRecord(recordId) {
-  const record = getCheckinById(recordId);
-  if (!record) {
-    showToast('[ 没有找到这条记录 ]', 2400);
-    return;
-  }
-
-  const confirmed = window.confirm(`删除 ${record.user} 在 ${record.date} 的这条记录？`);
-  if (!confirmed) return;
-
-  try {
-    await deleteCheckinRequest(recordId);
-    await refreshAppData();
-
-    if (activeEditingRecordId === recordId) {
-      cancelHistoryEdit();
-    }
-
-    showToast('[ 历史记录已删除 ]');
-  } catch (err) {
-    console.error(err);
-    showToast(`[ ${err.message || '删除失败'} ]`, 2800);
-  }
-}
-
-async function initApp() {
-  initTheme();
-  initToday();
-  toggleHistoryEditor(false);
-  await refreshAppData();
-}
-
-window.showPage = showPage;
-window.toggleTheme = toggleTheme;
-window.selectType = selectType;
-window.handleEvidenceFileChange = handleEvidenceFileChange;
-window.submitCheckin = submitCheckin;
-window.startHistoryEdit = startHistoryEdit;
-window.saveHistoryEdit = saveHistoryEdit;
-window.cancelHistoryEdit = cancelHistoryEdit;
-window.deleteHistoryRecord = deleteHistoryRecord;
 window.addCafeTask = addCafeTask;
 window.toggleCafeTask = toggleCafeTask;
+window.removeCafeTask = removeCafeTask;
+window.clearCafeTasks = clearCafeTasks;
 window.togglePomodoro = togglePomodoro;
 window.resetPomodoro = resetPomodoro;
 window.selectCafeCat = selectCafeCat;
-window.toggleCafeSound = toggleCafeSound;
+window.toggleAmbient = toggleAmbient;
+window.toggleSettings = toggleSettings;
 
-window.addEventListener('checkin:submitted', () => {
-  window.setTimeout(() => {
-    refreshAppData();
-  }, 600);
-});
-
-initCafeWorkspace();
-initApp();
+init();
