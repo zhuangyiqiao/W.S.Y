@@ -25,10 +25,21 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Check source and test core behavior
+        run: |
+          node scripts/check.js
+          npm test
+          node scripts/prepare-public.js
+
       - name: Upload site
         uses: actions/upload-pages-artifact@v3
         with:
-          path: .
+          path: public
 
       - name: Deploy
         uses: actions/deploy-pages@v4

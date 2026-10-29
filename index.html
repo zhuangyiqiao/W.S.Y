@@ -1,125 +1,63 @@
 <!doctype html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#201a19" />
-  <title>雨声咖啡馆</title>
-  <link rel="stylesheet" href="./assets/css/styles.css" />
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#fff6bd"><meta name="description" content="坐下来，听一点雨声。一个有音乐、猫猫与待办的安静咖啡馆。">
+  <title>雨声咖啡馆 · Rainy Cafe</title><link rel="stylesheet" href="./assets/css/styles.css">
 </head>
 <body>
-  <main class="cafe-app">
-    <div class="rain-layer" aria-hidden="true"></div>
-    <div class="window-glow" aria-hidden="true"></div>
-
-    <header class="topbar">
-      <a class="brand" href="./">雨声咖啡馆 <span>RAINY CAFE</span></a>
-      <div class="topbar-actions">
-        <span class="open-status"><i></i> OPEN ALL NIGHT</span>
-        <button class="icon-button" type="button" onclick="toggleAmbient()" aria-label="切换环境音" title="切换环境音">♫</button>
-        <button class="icon-button" type="button" onclick="toggleSettings()" aria-label="打开设置" title="设置">☼</button>
-      </div>
-    </header>
-
-    <section class="cafe-scene" aria-label="沉浸式咖啡馆">
-      <div class="scene-window">
-        <div class="window-city">
-          <span></span><span></span><span></span><span></span><span></span>
-        </div>
-        <div class="window-rain"></div>
-        <div class="window-frame vertical"></div>
-        <div class="window-frame horizontal"></div>
-      </div>
-      <div class="cafe-shelf">
-        <span class="shelf-cup">☕</span>
-        <span class="shelf-book"></span><span class="shelf-book small"></span>
-        <span class="shelf-plant">♧</span>
-      </div>
-      <div class="hanging-lamp"><b></b></div>
-      <div class="cafe-counter"></div>
-      <div class="table-surface">
-        <div class="coffee-cup"><i></i><b></b></div>
-        <div class="paper-stack"><span></span><span></span><span></span></div>
-        <div class="cat" id="cafe-cat" aria-label="陪伴猫猫">🐈</div>
-        <div class="cat-shadow"></div>
-      </div>
-      <div class="cafe-neon">coffee<br><small>and quiet things</small></div>
+  <a class="skip-link" href="#music">跳至音乐</a>
+  <header class="tools" aria-label="工作台工具">
+    <span class="little-time" id="clock"></span>
+    <button class="tool" data-panel="about" aria-label="关于这里" title="关于这里" aria-expanded="false">i</button>
+    <button class="tool" data-panel="settings" aria-label="场景与偏好" title="场景与偏好" aria-expanded="false">☼</button>
+    <button class="tool timer-tool" data-panel="timer" aria-label="番茄钟" title="番茄钟" aria-expanded="false"><span>◷</span><small id="mini-timer" hidden></small></button>
+    <button class="tool" data-panel="tasks" aria-label="今日待办" title="今日待办" aria-expanded="false">☷<span class="task-badge" id="task-badge" hidden></span></button>
+    <button class="tool" data-panel="account" aria-label="本机专注记录" title="本机专注记录" aria-expanded="false">♧</button>
+  </header>
+  <main class="cafe-layout">
+    <section class="music-column" id="music" aria-label="音乐角落">
+      <p class="overline">YOUR QUIET LITTLE CORNER</p><h1>雨声<br>咖啡馆<span>Rainy Cafe</span></h1><p class="intro">找个位置，慢慢来。</p>
+      <div class="music-box">
+        <div class="music-heading"><span class="tiny-label" id="music-label">PERSONAL MUSIC</span><span class="music-mark">♫</span></div>
+        <div class="record" aria-hidden="true"><div></div></div>
+        <h2 id="music-title">给今天选一点音乐</h2><p id="music-caption">你喜欢的歌，窗外的雨。</p>
+        <button class="music-open" id="open-music" type="button">在 QQ 音乐打开 ↗</button>
+        <button class="change-music" id="change-music" type="button" aria-expanded="false" aria-controls="music-editor">＋ 添加歌曲 / 歌单链接</button>
+        <form id="music-editor" hidden>
+          <label for="music-url">QQ 音乐歌曲或歌单链接</label><input id="music-url" type="url" required maxlength="2048" placeholder="https://y.qq.com/…">
+          <label for="music-name">名称（可选）</label><input id="music-name" maxlength="120" placeholder="我的咖啡馆歌单"><button class="filled" type="submit">保存链接</button>
+        </form>
+        <p class="form-error" id="music-error" role="alert"></p><div class="saved-music" id="saved-music"></div>
+      </div><p class="music-footnote">收藏喜欢的链接，前往 QQ 音乐收听。</p>
     </section>
-
-    <section class="workspace">
-      <div class="welcome-line">
-        <div>
-          <p class="eyebrow">YOUR LITTLE CORNER</p>
-          <h1>今晚坐这里。</h1>
-          <p class="welcome-copy">雨还在下，咖啡是热的。把要做的事情放在桌上，慢慢来。</p>
-        </div>
-        <div class="current-time" id="cafe-clock">00:00</div>
-      </div>
-
-      <div class="desk-grid">
-        <section class="card focus-card">
-          <div class="card-heading">
-            <div><p class="eyebrow">FOCUS SESSION</p><h2>专注一会儿</h2></div>
-            <span class="session-state" id="pomodoro-status">READY</span>
-          </div>
-          <div class="timer" id="pomodoro-time">25:00</div>
-          <p class="timer-caption" id="pomodoro-task-label">选一件小事，开始就好。</p>
-          <div class="timer-actions">
-            <button class="primary-button" id="pomodoro-toggle" type="button" onclick="togglePomodoro()">开始专注</button>
-            <button class="text-button" type="button" onclick="resetPomodoro()">重置</button>
-          </div>
-        </section>
-
-        <section class="card tasks-card">
-          <div class="card-heading">
-            <div><p class="eyebrow">ON YOUR TABLE</p><h2>今天要做的事</h2></div>
-            <span class="task-count" id="task-count">0 / 0</span>
-          </div>
-          <form class="task-form" onsubmit="addCafeTask(event)">
-            <input id="cafe-task-input" type="text" maxlength="80" placeholder="写下一件事…" autocomplete="off" />
-            <button type="submit" aria-label="添加任务">+</button>
-          </form>
-          <div class="task-list" id="cafe-task-list"></div>
-        </section>
-
-        <section class="card companion-card">
-          <div class="card-heading">
-            <div><p class="eyebrow">YOUR COMPANY</p><h2>今天和谁一起？</h2></div>
-          </div>
-          <div class="cat-picker" role="group" aria-label="选择陪伴猫猫">
-            <button type="button" class="cat-option selected" data-cat="🐈" onclick="selectCafeCat(this)">🐈<small>小黑</small></button>
-            <button type="button" class="cat-option" data-cat="🐈‍⬛" onclick="selectCafeCat(this)">🐈‍⬛<small>煤球</small></button>
-            <button type="button" class="cat-option" data-cat="🐱" onclick="selectCafeCat(this)">🐱<small>奶糖</small></button>
-            <button type="button" class="cat-option" data-cat="😺" onclick="selectCafeCat(this)">😺<small>橘子</small></button>
-          </div>
-          <div class="ambient-row">
-            <span><i class="sound-dot"></i>雨声与咖啡馆</span>
-            <button class="sound-toggle" id="sound-toggle" type="button" onclick="toggleAmbient()">开启</button>
-          </div>
-          <p class="small-note" id="ambient-note">让窗外的雨替你挡住一点喧嚣。</p>
-        </section>
-      </div>
+    <section class="scene-column" aria-label="咖啡馆场景"><div id="scene-art"></div><div class="scene-caption"><span class="live-dot"></span><span id="scene-name">窗边沙发咖啡馆</span><span class="scene-divider">/</span><span id="cat-caption">小黑在陪你</span></div></section>
+    <section class="sound-column" aria-label="环境声音调节">
+      <div class="sound-heading"><span class="tiny-label">MAKE YOURSELF AT HOME</span><button class="link-button" id="mute-sounds" type="button" aria-pressed="false">静音</button></div>
+      <div class="sound-preferences"><label><input id="save-sounds" type="checkbox" checked> 记住声音偏好</label></div><div id="sound-list"></div><p class="sound-note" id="scene-sound-note">按下播放，给安静添一点声音。<br>开放许可实地录音，可随时混合。</p><button class="link-button sound-source-link" data-panel="sources" aria-expanded="false">声音来源与授权</button>
     </section>
-
-    <footer class="footer">
-      <span>TABLE 07 · WINDOW SEAT</span>
-      <span id="footer-message">猫猫会陪你到这一轮结束。</span>
-      <button type="button" onclick="toggleSettings()">ABOUT THIS PLACE</button>
-    </footer>
   </main>
-
-  <div class="settings-drawer" id="settings-drawer" aria-hidden="true">
-    <div class="drawer-backdrop" onclick="toggleSettings()"></div>
-    <section class="drawer">
-      <button class="close-button" type="button" onclick="toggleSettings()" aria-label="关闭设置">×</button>
-      <p class="eyebrow">A QUIET PLACE</p>
-      <h2>这里暂时只有你、猫猫和雨声。</h2>
-      <p>任务和猫猫选择会保存在这台设备上。番茄钟结束时，猫猫会起身提醒你休息一下。</p>
-      <div class="drawer-rule"></div>
-      <button class="drawer-action" type="button" onclick="clearCafeTasks()">清空今天的任务</button>
-    </section>
-  </div>
-
-  <script type="module" src="./assets/js/main.js"></script>
+  <footer><span>STAY AWHILE. DO A LITTLE.</span><span id="footer-status">今天也有猫猫陪你。</span></footer>
+  <section class="popover" id="panel-about" aria-labelledby="about-title" hidden tabindex="-1">
+    <div class="panel-heading"><span class="tiny-label">A LITTLE ABOUT THIS PLACE</span><button class="close-panel" aria-label="关闭介绍">×</button></div><h2 id="about-title">给自己留一点空白。</h2><p>放点音乐，调一点雨声。把今天的一件小事放进待办，猫猫会陪你完成。</p><p>无需登录就能使用任务、番茄钟与环境音。本地数据保存在这台设备上。</p><p>左侧收藏 QQ 音乐歌曲和歌单链接，在原平台打开收听。</p>
+  </section>
+  <section class="popover" id="panel-sources" aria-labelledby="sources-title" hidden tabindex="-1"><div class="panel-heading"><span class="tiny-label">SOUNDS WITH A SOURCE</span><button class="close-panel" aria-label="关闭声音来源">×</button></div><h2 id="sources-title">声音从哪里来</h2><p>当前播放的是随网站打包的开放许可录音，不依赖第三方音频外链。每条录音的作者、许可和处理方式列在下方。</p><div id="scene-source-plan"></div></section>
+  <section class="popover" id="panel-tasks" aria-labelledby="tasks-title" hidden tabindex="-1">
+    <div class="panel-heading"><span class="tiny-label">ONE THING AT A TIME</span><button class="close-panel" aria-label="关闭待办">×</button></div><div class="heading-row"><h2 id="tasks-title">今日待办</h2><span id="task-count">0 / 0</span></div>
+    <form id="task-form" class="task-form"><label class="sr-only" for="task-input">新增任务</label><input id="task-input" maxlength="120" required placeholder="写下一件小事…" autocomplete="off"><button type="submit" aria-label="添加任务">＋</button></form><div id="task-list"></div><p class="panel-note">点击任务旁的 ◷，把它放进这一轮专注。</p>
+  </section>
+  <section class="popover" id="panel-timer" aria-labelledby="timer-title" hidden tabindex="-1">
+    <div class="panel-heading"><span class="tiny-label">A LITTLE TIME FOR YOURSELF</span><button class="close-panel" aria-label="关闭番茄钟">×</button></div><h2 id="timer-title">专注一会儿</h2>
+    <div class="mode-tabs" id="timer-modes"><button data-mode="focus" aria-pressed="true">专注</button><button data-mode="short" aria-pressed="false">短休息</button><button data-mode="long" aria-pressed="false">长休息</button></div><p id="timer-state">准备好了就开始</p><div class="timer-display" id="timer-display" role="timer">25:00</div><p id="focus-task">只做一件事，也很好。</p>
+    <div class="timer-actions"><button id="timer-toggle" class="filled">开始专注</button><button id="timer-reset" class="outline">重置</button></div><label class="duration-label">自定义分钟 <input id="timer-duration" type="number" min="1" max="180" step="1" value="25"></label><p class="panel-note" id="focus-stats">今天完成 0 轮专注</p>
+  </section>
+  <section class="popover" id="panel-settings" aria-labelledby="settings-title" hidden tabindex="-1">
+    <div class="panel-heading"><span class="tiny-label">YOUR KIND OF QUIET</span><button class="close-panel" aria-label="关闭设置">×</button></div><h2 id="settings-title">换个舒服的角落</h2><div class="scene-picker" id="scene-picker"></div><h3>今天和谁一起？</h3><div class="cat-picker" id="cat-picker"></div>
+    <label class="setting-row"><span>完成时猫叫</span><input id="meow-enabled" type="checkbox" checked></label><label class="setting-row"><span>场景与猫猫动画</span><input id="animation-enabled" type="checkbox" checked></label><label class="setting-row"><span>夜间配色</span><input id="night-enabled" type="checkbox"></label><p class="panel-note">切换场景会更换环境音，计时继续。</p>
+  </section>
+  <section class="popover" id="panel-account" aria-labelledby="account-title" hidden tabindex="-1">
+    <div class="panel-heading"><span class="tiny-label">A PLACE TO COME BACK TO</span><button class="close-panel" aria-label="关闭本机专注记录">×</button></div><h2 id="account-title">我的角落</h2><div id="account-view"></div><p class="form-error" id="account-error" role="alert"></p>
+  </section>
+  <div class="toast" id="toast" role="status" hidden></div><script type="module" src="./assets/js/main.js"></script>
 </body>
 </html>

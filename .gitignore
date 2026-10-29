@@ -1,0 +1,14 @@
+node_modules/
+.npm-cache/
+.wrangler/
+.dev.vars
+.env
+coverage/
+public/
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+.audio-tools/
+.audio-originals/
+.local-cloud/
+.release-check/

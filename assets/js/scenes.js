@@ -1,0 +1,44 @@
+import { SCENE_SOUND_PLANS } from './sound-catalog.js';
+export const CATS = [ { id:'black', name:'小黑', color:'#737b62' }, { id:'coal', name:'煤球', color:'#464b42' }, { id:'cream', name:'奶糖', color:'#d6c6a9' }, { id:'orange', name:'橘子', color:'#c79366' } ];
+export const SCENES=Object.entries(SCENE_SOUND_PLANS).map(([id,plan])=>({id,name:plan.label,tracks:plan.tracks}));
+// Original line illustration, authored as SVG to stay crisp at every viewport size.
+// A new window-lounge composition: upholstered banquette, cushions, low tables and plants.
+// Inspired by Peet's seating materials and proportions, not the previous reference illustration.
+const cafe = `<g class="window-architecture">
+<rect x="74" y="56" width="482" height="318" rx="3" class="glass-fill"/>
+<path d="M84 66H546V361H84Z M233 66V361 M244 66V361 M397 66V361 M408 66V361 M84 278H546 M84 288H546 M67 374H563V385H67Z"/>
+<g class="faint"><path d="M98 231L120 214H161V260 M177 260V188H217 M260 260V210L287 188L311 210V260 M325 260V170H375V260 M425 260V201H449L464 183H493V260 M506 260V218H534"/><path d="M112 243H148 M188 205H207 M335 188H361 M335 205H361 M435 220H449 M477 207H488"/></g>
+<path d="M100 94Q120 78 140 94 M272 130Q285 119 300 130" class="faint"/>
+</g>
+<g class="lounge-lamp"><path d="M455 12V104 M449 12H461 M425 104Q456 78 487 104L498 142H414Z"/><path d="M420 145H492"/><ellipse cx="456" cy="144" rx="30" ry="5" class="olive-fill"/></g>
+<g class="sofa">
+<path class="sofa-fill" d="M103 341Q99 316 125 313H508Q535 316 535 342V457L506 489H120L93 456Z"/>
+<path d="M116 333H251Q260 333 260 346V438H111 M271 333H402Q413 333 413 346V438H271 M425 333H510Q520 333 520 347V438H425"/>
+<path class="paper-fill" d="M107 437H518L536 482L510 510H113L90 482Z"/>
+<path class="sofa-fill" d="M104 446H258L265 486H111Z M267 446H410L417 486H272Z M420 446H510L526 479L510 486H427Z"/>
+<path class="sofa-fill" d="M82 389Q81 375 96 375H112Q124 375 124 390V498L107 528H81Z M507 390Q507 376 521 376H541Q556 376 556 391V511L536 531H507Z"/>
+<path d="M81 528H535V551H81Z M96 551V571H108V551 M517 551V571H529V551 M81 509H107 M516 511H545"/>
+<path class="pillow-fill" d="M143 352Q147 342 158 345L214 363Q224 367 220 379L204 422Q201 431 190 427L137 411Q126 408 132 397Z"/>
+<path class="faint" d="M154 352L147 405 M171 357L163 411 M188 362L180 417 M204 367L196 421 M139 373L212 396 M135 389L206 411"/>
+<path class="pillow-fill" d="M438 351Q447 345 455 352L494 382Q502 390 494 398L466 427Q459 433 451 427L415 397Q407 390 413 381Z"/>
+<path d="M427 381L468 415 M438 369L481 402" class="faint"/>
+</g>
+<g class="coffee-tables">
+<path d="M220 579V682 M230 579V682 M194 691Q224 674 254 691 M194 691V697H254V691"/>
+<ellipse class="paper-fill" cx="224" cy="561" rx="102" ry="34"/><path d="M122 561V570C137 611 310 611 326 570V561"/>
+<path class="paper-fill" d="M158 548L199 536L230 549L188 561Z M158 548V555L188 568L230 556V549 M188 561V568"/>
+<ellipse class="paper-fill" cx="269" cy="551" rx="25" ry="7"/><path class="paper-fill" d="M252 523L256 545Q269 555 280 543L285 523Z"/><ellipse cx="269" cy="523" rx="17" ry="5" class="paper-fill"/><ellipse cx="269" cy="523" rx="12" ry="3" class="coffee-fill"/><path d="M284 527Q303 520 298 536Q292 545 282 539"/>
+<g class="steam faint"><path d="M264 508C252 498 273 488 264 478 M275 508C267 497 286 491 278 481"/></g>
+<ellipse class="paper-fill" cx="487" cy="586" rx="57" ry="20"/><path d="M430 586V592Q484 624 544 592V586 M480 608V676 M490 608V676 M460 683Q485 672 512 683 M460 683V688H512V683"/>
+</g>
+<g class="window-plant"><path class="paper-fill" d="M30 504H77L71 569Q52 578 37 569Z"/><path d="M35 513H72 M52 505V414 M52 466Q20 463 18 438Q46 434 52 466 M54 446Q80 441 85 414Q58 411 54 446 M51 431Q25 429 27 403Q50 407 51 431 M54 487Q80 483 87 458Q59 456 54 487"/></g>
+<g class="faint"><path d="M35 615L587 644 M50 641L570 670 M106 590L82 680 M371 618L398 699"/></g>`;
+const rainy = `<path d="M75 65H550V400H75Z M87 78H538V387H87Z M310 78V387 M322 78V387 M87 250H538"/><g class="faint"><path d="M112 346V274H156V346 M170 346V230H219V346 M351 346V275H400V346 M440 346V215H484V346"/></g><g class="rain-lines faint">${Array.from({length:22},(_,i)=>`<path d="M${105+i*19} ${90+(i%4)*41}l-8 27 M${105+i*19} ${270+(i%3)*23}l-8 27"/>`).join('')}</g><path d="M110 460H540L563 485H87Z M105 485V695H119V485 M520 485V695H534V485 M120 541H520"/><path class="paper-fill" d="M217 317H430V443H217Z M225 326H422V434H225Z M307 443V460 M276 460H362 M254 476H396"/><path d="M142 451V267L182 230 M163 224L195 249L211 225L183 202Z M130 451H165 M459 421H494L489 452H464Z M494 428C516 418 512 447 491 443"/><path class="steam" d="M473 411C456 392 485 387 472 368"/>`;
+const beach = `<circle cx="479" cy="120" r="39"/><path d="M65 277Q154 261 241 277T430 277T590 277 M65 293Q154 277 241 293T430 293T590 293 M80 379Q216 334 361 376T590 376 M66 434Q205 392 340 428T583 435"/><path class="paper-fill" d="M100 239Q235 29 374 236Z"/><path d="M100 239Q144 210 189 235Q235 209 281 235Q326 208 374 236 M235 125V518 M235 125Q193 167 189 235 M235 125Q276 170 281 235"/><path class="paper-fill" d="M324 354L356 362L486 546L433 571L300 440Z"/><path d="M307 438L455 613 M433 571L416 671 M455 614L489 672 M341 380L367 371 M355 399L380 389 M371 421L395 410 M388 443L410 432 M404 465L426 455 M419 486L441 477 M435 508L456 499"/><path d="M103 504H246V519H103Z M123 519V641 M225 519V641 M159 468H190L185 502H164Z M174 469L185 443"/><path class="faint" d="M70 650Q194 623 297 652 M343 691Q475 661 590 690"/><path d="M80 170q16-14 32 0q15-14 30 0 M362 90q14-12 28 0q14-12 28 0"/>`;
+const camp = `<path d="M48 340L136 129L222 340H180L219 407H52L91 340Z M410 310L488 91L566 310H533L587 405H402L448 310Z M135 407V486 M489 405V474"/><path d="M221 487L355 265L483 487Z M355 265L374 487 M355 265L282 487 M282 487L342 386L374 487"/><path d="M120 592L232 549L245 571L134 615Z M132 550L239 592L228 614L120 572Z"/><path class="olive-fill steam" d="M148 544Q106 502 154 456Q146 494 173 478Q191 449 181 424Q237 486 209 541Z"/><path class="paper-fill" d="M164 543Q145 521 175 496Q166 516 187 510Q202 533 188 545Z"/><circle cx="359" cy="114" r="25"/><path class="paper-fill" d="M366 88Q338 122 382 127Q357 153 338 124Q326 99 366 88Z"/><g class="faint"><path d="M72 70V84 M65 77H79 M241 110V124 M234 117H248 M408 182V196 M401 189H415 M560 65V79 M553 72H567 M281 54V68 M274 61H288"/></g><path d="M344 568L506 557L521 584L352 600Z M355 600L342 661 M499 585L516 656"/>`;
+const cat = `<g class="scene-cat"><path class="cat-fill" d="M331 584Q323 556 347 545L346 520L364 533L384 518L390 545Q419 547 425 571Q430 590 408 594L348 594Z"/><path class="cat-tail" d="M411 587C459 598 461 555 439 556C422 556 435 575 444 567"/><path d="M349 552q6 6 12 0 M371 552q6 6 12 0 M365 562l3 3l3-3 M368 565v6 M345 561l-16-4 M345 566l-17 4 M390 561l15-5 M391 566l15 3" stroke="var(--paper)"/><path d="M351 589H367 M382 589H400"/></g>`;
+export function sceneSvg(id, catId) {
+  const item = CATS.find(c => c.id === catId) || CATS[0];
+  const art = { cafe, 'rainy-room': rainy, 'sunny-beach': beach, campfire: camp }[id] || cafe;
+  return `<svg class="scene-svg" viewBox="0 0 640 750" role="img" aria-label="${SCENES.find(s=>s.id===id)?.name || '咖啡馆'}，${item.name}安静陪伴" style="--cat-color:${item.color}">${art}<g transform="${id === 'cafe' ? 'translate(136 14) scale(.8)' : 'translate(0 0)'}">${cat}</g></svg>`;
+}

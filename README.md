@@ -1,10 +1,25 @@
-# 雨声咖啡馆
+# 雨声咖啡馆 · Rainy Cafe
 
-一个沉浸式的雨夜咖啡馆工作台：
+嫩黄色背景、咖啡色线条和蓝色音乐角落的静态专注网页。
 
-- 在咖啡馆场景中管理今天的任务
-- 使用 25 分钟番茄钟
-- 选择一只猫猫陪伴专注
-- 在窗边雨声和咖啡馆氛围中工作
-当前版本使用原生 HTML、CSS 和 JavaScript 实现，任务与猫猫选择保存在当前浏览器中。
-当前版本使用原生 HTML、CSS 和 JavaScript 实现，任务与猫猫选择保存在当前浏览器中。
+- 四个原创 SVG 场景，真实开放许可录音可独立混音。
+- 左侧收藏 QQ 音乐歌曲／歌单链接，在原平台打开收听。
+- 右上角待办、番茄钟、场景／猫猫设置与本机专注记录。
+- 本地保存任务、音量、链接与计时；无需登录和后端。
+
+本次不提供音乐授权、站内音乐播放、云端账号或多人房间。
+
+Node.js 22.17+，无需安装依赖：
+
+```sh
+npm run dev
+npm run check
+npm test
+npm run build
+```
+
+推送 main 后 GitHub Actions 将 public/ 发布到 GitHub Pages。
+
+- [静态版发布与维护](docs/STATIC-RELEASE.md)
+- [录音作者、来源、许可与修改说明](assets/audio/CREDITS.md)
+- [音频文件清单与 SHA-256](assets/audio/manifest.json)
