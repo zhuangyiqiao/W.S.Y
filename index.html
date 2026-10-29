@@ -3,15 +3,15 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>IRONPACT</title>
+  <title>雨夜咖啡馆</title>
   <link rel="stylesheet" href="./assets/css/styles.css" />
 </head>
 <body>
   <div class="app">
     <nav class="nav">
-      <div class="nav-logo">// IRON<span>PACT</span></div>
-      <button class="nav-tab active" onclick="showPage('dashboard', this)">仪表盘</button>
-      <button class="nav-tab" onclick="showPage('checkin', this)">打卡</button>
+      <div class="nav-logo">雨夜<span>咖啡馆</span></div>
+      <button class="nav-tab active" onclick="showPage('dashboard', this)">咖啡馆</button>
+      <button class="nav-tab" onclick="showPage('checkin', this)">旧打卡</button>
       <button class="nav-tab" onclick="showPage('leaderboard', this)">排行榜</button>
       <button class="nav-tab" onclick="showPage('analytics', this)">趋势</button>
       <button class="nav-tab" onclick="showPage('history', this)">历史</button>
@@ -19,71 +19,68 @@
       <button class="nav-tab" onclick="toggleTheme()">黑/白</button>
     </nav>
 
-    <div class="page active" id="page-dashboard">
-      <p class="section-label" style="margin-top:4px">今日状态</p>
-
-      <div class="survival-section">
-        <div class="survival-title">// 今日存活状态</div>
-
-        <div class="survival-row">
-          <span class="survival-name">漾</span>
-          <div class="survival-bar-wrap">
-            <div class="survival-bar-fill" id="bar-yang" style="width:0%;background:var(--c-accent)"></div>
-          </div>
-          <span class="survival-status miss" id="status-yang">--</span>
+    <div class="page active cafe-page" id="page-dashboard">
+      <div class="cafe-hero">
+        <div>
+          <p class="cafe-kicker">雨夜咖啡馆 · 现在营业</p>
+          <h1>今晚也找个舒服的位置吧。</h1>
+          <p class="cafe-subtitle">点一杯热饮，选一只猫猫，安静完成手边的事。</p>
         </div>
-
-        <div class="survival-row">
-          <span class="survival-name">闪</span>
-          <div class="survival-bar-wrap">
-            <div class="survival-bar-fill" id="bar-shan" style="width:0%;background:var(--c-accent2)"></div>
-          </div>
-          <span class="survival-status miss" id="status-shan">--</span>
-        </div>
-
-        <div class="survival-row">
-          <span class="survival-name">源</span>
-          <div class="survival-bar-wrap">
-            <div class="survival-bar-fill" id="bar-yuan" style="width:0%;background:var(--c-warn)"></div>
-          </div>
-          <span class="survival-status miss" id="status-yuan">--</span>
-        </div>
+        <div class="cafe-clock" id="cafe-clock">00:00</div>
       </div>
 
-      <div class="stat-grid">
-        <div class="stat-card">
-          <div class="stat-label">本周积分榜首</div>
-          <div class="stat-val accent" id="dashboard-week-leader">--</div>
-          <div style="font-size:12px;color:var(--c-muted);margin-top:4px;font-family:var(--c-mono)" id="dashboard-week-leader-meta">0 pts</div>
+      <div class="cafe-scene">
+        <div class="cafe-window"><span></span><i></i><b></b></div>
+        <div class="cafe-shelf"><span>☕</span><span>✦</span><span>📚</span></div>
+        <div class="cafe-lamp"></div>
+        <div class="cafe-table">
+          <div class="cafe-cup">☕</div>
+          <div class="cafe-notebook"></div>
+          <div class="cafe-cat" id="cafe-cat" aria-label="陪伴猫猫">🐈</div>
+          <div class="cafe-cat-shadow"></div>
         </div>
-
-        <div class="stat-card">
-          <div class="stat-label">公共池余额</div>
-          <div class="stat-val warn" id="dashboard-pool-balance">¥ 0</div>
-          <div style="font-size:12px;color:var(--c-muted);margin-top:4px;font-family:var(--c-mono)" id="dashboard-pool-meta">当前累计</div>
-        </div>
-
-        <div class="stat-card">
-          <div class="stat-label">本周完成率</div>
-          <div class="stat-val accent2" id="dashboard-week-rate">0%</div>
-          <div style="font-size:12px;color:var(--c-muted);margin-top:4px;font-family:var(--c-mono)" id="dashboard-week-rate-meta">初始化状态</div>
-        </div>
-
-        <div class="stat-card">
-          <div class="stat-label">当前最长连续天数</div>
-          <div class="stat-val" style="color:var(--c-purple)" id="dashboard-longest-streak">0天</div>
-          <div style="font-size:12px;color:var(--c-muted);margin-top:4px;font-family:var(--c-mono)" id="dashboard-longest-streak-meta">待开始</div>
-        </div>
+        <div class="cafe-sign">OPEN · 24H</div>
       </div>
 
-      <p class="section-label">本周积分排行</p>
-      <div class="score-table" id="dashboard-ranking-table">
-        <div class="score-row header">
-          <span style="font-family:var(--c-mono);font-size:10px;color:var(--c-muted)">#</span>
-          <span style="font-family:var(--c-mono);font-size:10px;color:var(--c-muted)">成员</span>
-          <span style="font-family:var(--c-mono);font-size:10px;color:var(--c-muted);text-align:right">积分</span>
-          <span style="font-family:var(--c-mono);font-size:10px;color:var(--c-muted);text-align:right">状态</span>
-        </div>
+      <div class="cafe-grid">
+        <section class="cafe-panel pomodoro-panel">
+          <div class="cafe-panel-heading">
+            <div><span class="cafe-label">FOCUS TIMER</span><h2>番茄钟</h2></div>
+            <span class="cafe-status" id="pomodoro-status">准备好了</span>
+          </div>
+          <div class="pomodoro-time" id="pomodoro-time">25:00</div>
+          <div class="pomodoro-task" id="pomodoro-task-label">为当前任务专注一会儿</div>
+          <div class="pomodoro-actions">
+            <button class="cafe-primary-btn" id="pomodoro-toggle" type="button" onclick="togglePomodoro()">开始专注</button>
+            <button class="cafe-quiet-btn" type="button" onclick="resetPomodoro()">重置</button>
+          </div>
+        </section>
+
+        <section class="cafe-panel tasks-panel">
+          <div class="cafe-panel-heading">
+            <div><span class="cafe-label">TODAY'S TABLE</span><h2>今日桌面</h2></div>
+            <span class="task-count" id="task-count">0/0</span>
+          </div>
+          <form class="task-form" onsubmit="addCafeTask(event)">
+            <input id="cafe-task-input" type="text" maxlength="80" placeholder="记下一件要完成的事…" autocomplete="off">
+            <button type="submit" aria-label="添加任务">+</button>
+          </form>
+          <div class="cafe-task-list" id="cafe-task-list"></div>
+        </section>
+
+        <section class="cafe-panel cafe-controls">
+          <div class="cafe-panel-heading">
+            <div><span class="cafe-label">YOUR COMPANION</span><h2>选择陪伴猫猫</h2></div>
+          </div>
+          <div class="cat-picker" role="group" aria-label="选择陪伴猫猫">
+            <button type="button" class="cat-option selected" data-cat="🐈" onclick="selectCafeCat(this)">🐈<small>小黑</small></button>
+            <button type="button" class="cat-option" data-cat="🐈‍⬛" onclick="selectCafeCat(this)">🐈‍⬛<small>煤球</small></button>
+            <button type="button" class="cat-option" data-cat="🐱" onclick="selectCafeCat(this)">🐱<small>奶糖</small></button>
+            <button type="button" class="cat-option" data-cat="😺" onclick="selectCafeCat(this)">😺<small>橘子</small></button>
+          </div>
+          <div class="sound-row"><span>☔ 雨夜环境音</span><button type="button" class="sound-toggle" id="sound-toggle" onclick="toggleCafeSound()">开启</button></div>
+          <p class="cafe-note">音乐和歌单功能即将加入，先让猫猫陪你坐一会儿。</p>
+        </section>
       </div>
     </div>
 
