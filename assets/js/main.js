@@ -128,7 +128,7 @@ function renderTimer(){
   $('focus-stats').textContent=`今天完成 ${data.stats[dayKey()]?.pomodoros||0} 轮专注`;
   document.querySelectorAll('[data-mode]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.mode===t.mode)));
   if(document.activeElement!==$('timer-duration'))$('timer-duration').value=t.duration/60;
-  document.title=t.state==='running'?`${formatTime(left)} · 雨声咖啡馆`:'雨声咖啡馆 · Rainy Cafe';
+  document.title=t.state==='running'?`${formatTime(left)} · life.ing`:'life.ing';
 }
 function finishTimer(){
   const old=data.timer;data.timer=settleTimer(old);
