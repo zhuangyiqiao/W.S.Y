@@ -21,6 +21,34 @@ test('每个上线音轨均有随站文件、许可、作者和可验证哈希',
   }
 });
 const context={createBuffer(channels,length,sampleRate){const arrays=Array.from({length:channels},()=>new Float32Array(length));return {length,sampleRate,numberOfChannels:channels,getChannelData:i=>arrays[i]};}};
+test('解锁音频期间取消播放，不会创建迟到的音轨',async()=>{
+  let unlock,valid=true;
+  const mixer=new SoundMixer();
+  mixer.unlock=()=>new Promise(resolve=>unlock=resolve);
+  const request=mixer.play('rain',40,()=>valid);
+  valid=false;unlock();
+  assert.equal(await request,false);assert.equal(mixer.tracks.size,0);
+});
+test('解码缓存超预算时淘汰旧闲置录音，保留播放中的音轨',()=>{
+  const mixer=new SoundMixer({maxCacheBytes:100});
+  for(const [id,size] of [['old',80],['playing',80],['recent',20]]){mixer.buffers.set(id,Promise.resolve({}));mixer.bufferSizes.set(id,size);}
+  mixer.tracks.set('playing',{});mixer.pruneCache();
+  assert.equal(mixer.buffers.has('old'),false);assert.equal(mixer.buffers.has('playing'),true);assert.equal(mixer.cacheBytes,100);
+  mixer.tracks.delete('playing');mixer.maxCacheBytes=20;mixer.pruneCache();
+  assert.equal(mixer.cacheBytes,20);assert.ok(mixer.buffers.has('recent'));
+});
+test('加载失败清除失败缓存，重试重新请求并复用成功缓存',async()=>{
+  const originalFetch=globalThis.fetch;let requests=0;
+  try{
+    globalThis.fetch=async()=>{requests++;if(requests===1)throw new Error('offline');return {ok:true,arrayBuffer:async()=>new ArrayBuffer(8)};};
+    const mixer=new SoundMixer();
+    mixer.context={...context,decodeAudioData:async()=>context.createBuffer(1,100,10)};
+    const track={id:'test',src:'https://example.invalid/test.mp3'};
+    await assert.rejects(mixer.recording(track),/加载失败/);
+    const first=await mixer.recording(track),second=await mixer.recording(track);
+    assert.equal(first,second);assert.equal(requests,2);
+  }finally{globalThis.fetch=originalFetch;}
+});
 test('连续录音首尾重叠，短音效追加静默避免密集重复',()=>{
   const input=context.createBuffer(1,100,10);input.getChannelData(0).set(Array.from({length:100},(_,i)=>i));
   const loop=loopRecording(context,input);assert.equal(loop.length,94);assert.equal(loop.getChannelData(0)[0],94);assert.equal(loop.getChannelData(0)[93],93);

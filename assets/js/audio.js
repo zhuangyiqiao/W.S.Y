@@ -14,7 +14,15 @@ export function loopRecording(ctx, buffer, event=false) {
   return result;
 }
 export class SoundMixer {
-  constructor(){this.context=null;this.tracks=new Map();this.buffers=new Map();this.muted=false;}
+  constructor({maxCacheBytes=24*1024*1024}={}){this.context=null;this.tracks=new Map();this.buffers=new Map();this.bufferSizes=new Map();this.maxCacheBytes=maxCacheBytes;this.muted=false;}
+  get cacheBytes(){return [...this.bufferSizes.values()].reduce((sum,size)=>sum+size,0);}
+  pruneCache(){
+    for(const id of this.buffers.keys()){
+      if(this.cacheBytes<=this.maxCacheBytes)break;
+      if(this.tracks.has(id)||!this.bufferSizes.has(id))continue;
+      this.buffers.delete(id);this.bufferSizes.delete(id);
+    }
+  }
   async unlock(){
     if(!this.context){
       const Context=globalThis.AudioContext||globalThis.webkitAudioContext;
@@ -28,33 +36,42 @@ export class SoundMixer {
   async recording(track){
     if(!this.buffers.has(track.id)){
       const pending=(async()=>{
-        const response=await fetch(track.src);
+        let response;
+        try{response=await fetch(track.src,{signal:AbortSignal.timeout(20000)});}
+        catch(error){throw new Error(error.name==='TimeoutError'?'加载超时，请重试':'录音加载失败，请检查网络后重试');}
         if(!response.ok)throw new Error('录音加载失败，请检查网络后重试');
         const decoded=await this.context.decodeAudioData(await response.arrayBuffer());
-        return loopRecording(this.context,decoded,track.event);
+        const loop=loopRecording(this.context,decoded,track.event);
+        this.bufferSizes.set(track.id,loop.length*loop.numberOfChannels*4);
+        this.pruneCache();
+        return loop;
       })();
       this.buffers.set(track.id,pending);
-      pending.catch(()=>this.buffers.delete(track.id));
+      pending.catch(()=>{if(this.buffers.get(track.id)===pending){this.buffers.delete(track.id);this.bufferSizes.delete(track.id);}});
     }
-    return this.buffers.get(track.id);
+    const cached=this.buffers.get(track.id);
+    if(cached){this.buffers.delete(track.id);this.buffers.set(track.id,cached);}
+    return cached;
   }
-  async play(id,volume){
+  async play(id,volume,valid=()=>true){
     await this.unlock();
+    if(!valid())return false;
     const track=SOUND_TRACKS.find(t=>t.id===id);
     if(!track)throw new Error('未知音轨');
-    if(this.tracks.has(id)){this.volume(id,volume);return;}
+    if(this.tracks.has(id)){this.volume(id,volume);return true;}
     const ctx=this.context,gain=ctx.createGain(),node={gain,source:null};
     gain.gain.value=0;gain.connect(this.master);this.tracks.set(id,node);
     try{
       const buffer=await this.recording(track);
-      if(this.tracks.get(id)!==node)return;
+      if(this.tracks.get(id)!==node||!valid()){if(this.tracks.get(id)===node)this.pause(id);return false;}
       const source=ctx.createBufferSource();node.source=source;
-      source.buffer=buffer;source.loop=true;source.connect(gain);source.start();this.volume(id,volume);
+      source.buffer=buffer;source.loop=true;source.connect(gain);source.start();this.volume(id,volume);return true;
     }catch(error){if(this.tracks.get(id)===node)this.tracks.delete(id);gain.disconnect();throw error;}
   }
   pause(id){
     const node=this.tracks.get(id);if(!node)return;
     this.tracks.delete(id);
+    this.pruneCache();
     if(!node.source){node.gain.disconnect();return;}
     node.gain.gain.setTargetAtTime(0,this.context.currentTime,.04);
     node.source.stop(this.context.currentTime+.2);

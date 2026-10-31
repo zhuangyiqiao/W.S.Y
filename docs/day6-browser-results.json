@@ -1,0 +1,44 @@
+[
+  {
+    "browser": "Chrome",
+    "version": "156.0.8078.79",
+    "navigation": {
+      "domContentLoadedMs": 43,
+      "resources": 11
+    },
+    "initialAudioRequests": 0,
+    "combinations": 16,
+    "rapidSceneChanges": 80,
+    "domNodesBefore": 538,
+    "domNodesAfter": 538,
+    "cache": {
+      "playing": 6,
+      "activeBytes": 38999240,
+      "idleBytes": 19358504,
+      "budget": 25165824,
+      "remainingTracks": 0
+    },
+    "pageErrors": []
+  },
+  {
+    "browser": "Edge",
+    "version": "156.0.4314.50",
+    "navigation": {
+      "domContentLoadedMs": 52,
+      "resources": 11
+    },
+    "initialAudioRequests": 0,
+    "combinations": 16,
+    "rapidSceneChanges": 80,
+    "domNodesBefore": 538,
+    "domNodesAfter": 540,
+    "cache": {
+      "playing": 6,
+      "activeBytes": 38999240,
+      "idleBytes": 19358504,
+      "budget": 25165824,
+      "remainingTracks": 0
+    },
+    "pageErrors": []
+  }
+]

@@ -31,3 +31,18 @@ test('迁移不修改原始键；损坏计时恢复为可用状态',()=>{
   d.timer.deadline='bad';d.timer.state='running';saveData(d,storage);assert.equal(loadData(storage).timer.state,'idle');assert.ok(map.has(STORAGE_KEY));
 });
 test('本地日期不会因 UTC 转换偏移',()=>{const date=new Date(2026,9,29,0,1);assert.equal(dayKey(date),'2026-10-29');});
+
+test('浏览器禁止读取 localStorage 时页面仍可初始化并报告保存失败',()=>{
+  const original=Object.getOwnPropertyDescriptor(globalThis,'localStorage');
+  try{
+    Object.defineProperty(globalThis,'localStorage',{configurable:true,get(){throw new Error('SecurityError');}});
+    const data=loadData();assert.equal(data.timer.state,'idle');assert.equal(data.settings.scene,'cafe');
+    assert.equal(saveData(data),false);
+  }finally{if(original)Object.defineProperty(globalThis,'localStorage',original);else delete globalThis.localStorage;}
+});
+test('损坏的声音偏好与布尔设置恢复默认，任务和音乐不丢失',()=>{
+  const saved={version:2,settings:{sounds:'invalid',animation:'false',saveSounds:null,keepMix:'true'},tasks:[{title:'保留任务'}],music:[{id:'song',url:'https://y.qq.com/'}]};
+  const data=loadData({getItem:()=>JSON.stringify(saved)});
+  assert.deepEqual(data.settings.sounds,{});assert.equal(data.settings.animation,true);assert.equal(data.settings.saveSounds,true);assert.equal(data.settings.keepMix,false);
+  assert.equal(data.tasks.length,1);assert.equal(data.music.length,1);
+});

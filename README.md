@@ -1,4 +1,4 @@
-# 雨声咖啡馆 · Rainy Cafe
+# life.ing｜生活进行时
 
 嫩黄色背景、咖啡色线条和嫩粉色音乐角落（浅色与深色模式保持一致）的静态专注网页。
 
@@ -21,5 +21,8 @@ npm run build
 推送 main 后 GitHub Actions 将 public/ 发布到 GitHub Pages。
 
 - [静态版发布与维护](docs/STATIC-RELEASE.md)
+- [当前基线与第一天验收](docs/DAY-1-BASELINE.md)
+- [一周优化计划](docs/LIFE-ING-WEEK-PLAN.md)
+- [第六天性能与发布前验收](docs/DAY-6-VALIDATION.md)
 - [录音作者、来源、许可与修改说明](assets/audio/CREDITS.md)
 - [音频文件清单与 SHA-256](assets/audio/manifest.json)
