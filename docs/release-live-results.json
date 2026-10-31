@@ -1,0 +1,52 @@
+{
+  "url": "https://zhuangyiqiao.github.io/W.S.Y/",
+  "release": {
+    "product": "life.ing",
+    "version": "2.1.0",
+    "releaseDate": "2026-10-31",
+    "mode": "static"
+  },
+  "sourceCommit": "4a0e2965b814bb9886900b4022754e6760e1a3ea",
+  "workflowRun": "https://github.com/zhuangyiqiao/W.S.Y/actions/runs/41169428021",
+  "audio": [
+    {
+      "file": "coffee.mp3",
+      "bytes": 1236053,
+      "sha256": "verified"
+    },
+    {
+      "file": "cup.mp3",
+      "bytes": 5373,
+      "sha256": "verified"
+    },
+    {
+      "file": "rain.mp3",
+      "bytes": 720710,
+      "sha256": "verified"
+    },
+    {
+      "file": "waves.mp3",
+      "bytes": 48945,
+      "sha256": "verified"
+    },
+    {
+      "file": "fire.mp3",
+      "bytes": 43929,
+      "sha256": "verified"
+    },
+    {
+      "file": "crickets.mp3",
+      "bytes": 138284,
+      "sha256": "verified"
+    }
+  ],
+  "checks": [
+    "mobile page",
+    "scene switch",
+    "swing chair",
+    "task and timer",
+    "real ambient playback",
+    "refresh silent"
+  ],
+  "pageErrors": []
+}

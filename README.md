@@ -1,5 +1,7 @@
 # life.ing｜生活进行时
 
+[访问已发布的 life.ing 2.1.0](https://zhuangyiqiao.github.io/W.S.Y/) · [发布与线上验收记录](docs/DAY-7-RELEASE.md)
+
 嫩黄色背景、咖啡色线条和嫩粉色音乐角落（浅色与深色模式保持一致）的静态专注网页。
 
 - 四个原创 SVG 场景，真实开放许可录音可独立混音。
